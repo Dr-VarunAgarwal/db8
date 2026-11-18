@@ -1,0 +1,3260 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="editorial">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Crux — AI-Mediated Human Debate</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            serif: ['Newsreader', 'Georgia', 'serif'],
+            sans: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            paper: 'var(--c-paper)',
+            ink: 'var(--c-ink)',
+            subtle: 'var(--c-subtle)',
+            borderwarm: 'var(--c-border)',
+            accent: 'var(--c-accent)',
+            accentlight: 'var(--c-accentlight)',
+            ambermuted: 'var(--c-amber)',
+            amberbg: 'var(--c-amberbg)',
+            slatemuted: '#475569'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Theme 1: Warm Editorial Paper (Default) */
+    :root, html[data-theme="editorial"] {
+      --c-paper: #FAF9F6;
+      --c-ink: #18181B;
+      --c-subtle: #F3F1EC;
+      --c-border: #E4E0D8;
+      --c-accent: #2B5B4E;
+      --c-accentlight: #EBF3F0;
+      --c-amber: #9A5B13;
+      --c-amberbg: #FDF6EC;
+      --c-body-bg: #FAF9F6;
+      --c-hero-char-a: #C26D1F;
+      --c-hero-char-b: #2B5B4E;
+      --c-hero-cloth-a: #D97706;
+      --c-hero-cloth-b: #1F4E42;
+      --c-hero-trouser: #27272A;
+    }
+
+    /* Theme 2: Cerulean Wave Canvas (Optional in Settings) */
+    html[data-theme="cerulean"] {
+      --c-paper: #F4FAFD;
+      --c-ink: #0D4C73;
+      --c-subtle: #EBF6FC;
+      --c-border: #CFE7F5;
+      --c-accent: #116A9C;
+      --c-accentlight: #E3F4FC;
+      --c-amber: #B45309;
+      --c-amberbg: #FEF3C7;
+      --c-body-bg: #075996;
+      --c-hero-char-a: #F59E0B;
+      --c-hero-char-b: #0284C7;
+      --c-hero-cloth-a: #FBBF24;
+      --c-hero-cloth-b: #0EA5E9;
+      --c-hero-trouser: #15324A;
+    }
+
+    body {
+      background-color: var(--c-body-bg);
+      color: var(--c-ink);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      position: relative;
+      overflow-x: hidden;
+      transition: background-color 0.25s ease, color 0.2s ease;
+    }
+
+    html[data-theme="cerulean"] body {
+      background: linear-gradient(135deg, #0A74B8 0%, #075996 55%, #064778 100%);
+      padding: 1rem;
+    }
+    @media (min-width: 640px) {
+      html[data-theme="cerulean"] body {
+        padding: 2rem 2.5rem;
+      }
+    }
+
+    /* Outer wave decorations only visible in Cerulean theme */
+    .cerulean-only-wave { display: none; }
+    html[data-theme="cerulean"] .cerulean-only-wave { display: block; }
+
+    /* App Shell adapts cleanly between full-bleed Editorial Paper and Floating Cerulean Card */
+    .app-shell {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    html[data-theme="cerulean"] .app-shell {
+      max-width: 80rem;
+      margin: 0 auto;
+      background-color: #FFFFFF;
+      border-radius: 1.5rem;
+      box-shadow: 0 25px 70px rgba(3, 37, 65, 0.42);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      min-height: calc(100vh - 4rem);
+      overflow: hidden;
+      position: relative;
+      z-index: 10;
+    }
+
+    .font-editorial { font-family: 'Newsreader', Georgia, serif; }
+    .epistemic-span {
+      border-bottom: 2px dotted #D97706;
+      background-color: var(--c-amberbg);
+      padding: 0 3px;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: background-color 0.15s ease;
+    }
+    .epistemic-span:hover, .epistemic-span.active {
+      background-color: #FDE68A;
+    }
+    @keyframes pulseRing {
+      0% { box-shadow: 0 0 0 0 rgba(43, 91, 78, 0.45); }
+      70% { box-shadow: 0 0 0 10px rgba(43, 91, 78, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(43, 91, 78, 0); }
+    }
+    .turn-highlight {
+      animation: pulseRing 1.4s ease-out 2;
+      border-color: var(--c-accent) !important;
+    }
+    @keyframes fadeSlideUp {
+      0% { opacity: 0; transform: translateY(6px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    .animate-view-in {
+      animation: fadeSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes floatGentle {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-5px); }
+    }
+    .svg-float {
+      animation: floatGentle 3.8s ease-in-out infinite;
+    }
+    @keyframes dashFlow {
+      0% { stroke-dashoffset: 36; }
+      100% { stroke-dashoffset: 0; }
+    }
+    .svg-flow-line {
+      stroke-dasharray: 6 6;
+      animation: dashFlow 1.6s linear infinite;
+    }
+    @keyframes balanceSway {
+      0%, 100% { transform: rotate(0deg); }
+      35% { transform: rotate(-1.4deg); }
+      70% { transform: rotate(1.4deg); }
+    }
+    .svg-balance-beam {
+      transform-origin: 340px 235px;
+      animation: balanceSway 5.5s ease-in-out infinite;
+    }
+    .hotspot-node {
+      cursor: pointer;
+      transition: transform 0.2s ease, filter 0.2s ease;
+    }
+    .hotspot-node:hover {
+      filter: drop-shadow(0 6px 12px rgba(24, 24, 27, 0.14));
+    }
+    .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 9999px; }
+  </style>
+</head>
+<body class="selection:bg-accentlight selection:text-accent">
+
+  <!-- OUTER OCEAN BLUE LAYERED WAVE SHAPES (Visible only when Cerulean Theme is selected in Settings) -->
+  <div class="cerulean-only-wave fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden="true">
+    <svg class="absolute -top-24 -left-24 w-[520px] h-[520px] text-[#1789D1]/40" viewBox="0 0 500 500" fill="currentColor">
+      <path d="M412,312Q372,424,255,436Q138,448,79,349Q20,250,77,147Q134,44,256,51Q378,58,415,154Q452,250,412,312Z" />
+    </svg>
+    <svg class="absolute top-1/3 -right-32 w-[600px] h-[600px] text-[#05406C]/55" viewBox="0 0 500 500" fill="currentColor">
+      <path d="M434,330Q392,410,301,442Q210,474,125,418Q40,362,48,257Q56,152,135,91Q214,30,312,56Q410,82,443,166Q476,250,434,330Z" />
+    </svg>
+    <svg class="absolute -bottom-28 left-1/4 w-[650px] h-[420px] text-[#1481C7]/35" viewBox="0 0 600 400" fill="currentColor">
+      <path d="M511,274Q452,368,325,375Q198,382,107,301Q16,220,90,115Q164,10,302,22Q440,34,505,127Q570,220,511,274Z" />
+    </svg>
+  </div>
+
+  <!-- MAIN APPLICATION SHELL -->
+  <div class="app-shell">
+
+    <!-- INNER SOFT ICE-BLUE WAVE BLOBS (Visible only when Cerulean Theme is active) -->
+    <svg class="cerulean-only-wave pointer-events-none absolute top-0 left-0 w-[65%] max-w-[760px] h-auto text-[#EBF6FC] -z-0" viewBox="0 0 800 520" fill="currentColor" aria-hidden="true">
+      <path d="M0,0 L640,0 C610,120 470,115 415,205 C360,295 455,390 350,465 C245,540 90,485 0,510 Z" />
+    </svg>
+    <svg class="cerulean-only-wave pointer-events-none absolute bottom-0 right-0 w-[44%] max-w-[520px] h-auto text-[#EBF6FC] -z-0" viewBox="0 0 550 420" fill="currentColor" aria-hidden="true">
+      <path d="M550,420 L0,420 C35,320 140,330 220,250 C300,170 280,65 410,20 C480,-5 520,10 550,0 Z" />
+    </svg>
+
+    <!-- ===================================================================== -->
+    <!-- TOP NAVIGATION BAR (Clean 3-Tab Switcher + Corner Control Hub ≡)      -->
+    <!-- ===================================================================== -->
+    <header class="sticky top-0 z-40 bg-paper/95 backdrop-blur-md border-b border-borderwarm">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 h-15 py-2.5 flex items-center justify-between gap-3">
+        
+        <!-- Left Brand Mark + 3-Tab Segmented Switcher -->
+        <div class="flex items-center gap-3 sm:gap-5">
+          <button onclick="navigate('home')" class="flex items-center gap-2.5 text-left group focus:outline-none shrink-0">
+            <div class="w-8 h-8 rounded-lg bg-ink text-paper flex items-center justify-center font-editorial font-semibold text-lg tracking-tight group-hover:bg-accent transition-colors">
+              C
+            </div>
+            <div class="hidden sm:block">
+              <span class="font-editorial font-semibold text-lg tracking-tight text-ink">Crux</span>
+              <span class="text-[11px] text-stone-500 block -mt-1">Socratic Debate</span>
+            </div>
+          </button>
+
+          <nav aria-label="Main Navigation" class="inline-flex items-center p-1 rounded-xl bg-subtle border border-borderwarm gap-1">
+            <button id="nav-tab-home" onclick="navigate('home')" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-ink text-white shadow-xs transition-all">
+              <span id="nav-dot-home" class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+              <span>Home</span>
+            </button>
+
+            <button id="nav-tab-arena" onclick="navigate('arena')" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold text-stone-600 hover:text-ink transition-all">
+              <span id="nav-dot-arena" class="w-1.5 h-1.5 rounded-full bg-stone-400"></span>
+              <span>Debate Arena</span>
+              <span id="nav-room-code" class="hidden md:inline font-mono text-[10px] opacity-80">#CRX-842</span>
+            </button>
+
+            <button id="nav-tab-start" onclick="navigate('start')" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold text-stone-600 hover:text-ink transition-all">
+              <span id="nav-dot-start" class="w-1.5 h-1.5 rounded-full bg-stone-400"></span>
+              <span>Start / Pair</span>
+            </button>
+          </nav>
+        </div>
+
+        <!-- Right Controls: Sync Indicator + Corner Control Hub (≡) -->
+        <div class="flex items-center gap-2.5 shrink-0">
+          <div id="sync-status-badge" class="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-subtle border border-borderwarm text-[11px] text-stone-600">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+            <span id="sync-status-text">Local Two-Tab Sync Ready</span>
+          </div>
+
+          <button onclick="openDrawer('profile')" aria-label="Corner Control Hub" title="Profile, Theme Settings, Knowledge Base & Credits" class="w-9 h-9 rounded-lg border border-borderwarm bg-white hover:bg-subtle flex items-center justify-center text-ink transition-colors shadow-xs">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Toast Notification Pill -->
+    <div id="toast-notification" class="fixed bottom-6 right-6 z-50 hidden items-center gap-2 px-4 py-2.5 rounded-xl bg-ink text-white text-xs font-medium shadow-xl border border-stone-700">
+      <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+      <span id="toast-text">Action completed</span>
+    </div>
+
+    <!-- MAIN CONTENT VIEWPORT -->
+    <main class="relative z-10 flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8">
+
+      <!-- ===================================================================== -->
+      <!-- VIEW 1: WELCOME HOME PAGE WITH CONCEPT A & CONCEPT B GRAPHIC SWITCHER -->
+      <!-- ===================================================================== -->
+      <section id="view-home" class="space-y-8 animate-view-in">
+        
+        <div class="bg-white border border-borderwarm rounded-3xl p-6 sm:p-8 lg:p-10 shadow-xs">
+          <!-- Top Concept Bar: Let User Test Both Flat-Vector Debate Concepts Live -->
+          <div class="flex flex-wrap items-center justify-between gap-3 pb-6 mb-6 border-b border-borderwarm">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-accent"></span>
+              <span class="text-xs font-mono uppercase tracking-wider text-stone-500">Interactive Debate Visual Metaphor</span>
+            </div>
+
+            <div class="inline-flex items-center p-1 rounded-xl bg-subtle border border-borderwarm gap-1">
+              <button type="button" id="btn-concept-a" onclick="switchHeroConcept('A')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-ink text-white shadow-xs transition-all">
+                Concept A: Tangled Knot &rarr; Blueprint
+              </button>
+              <button type="button" id="btn-concept-b" onclick="switchHeroConcept('B')" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-stone-600 hover:text-ink transition-all">
+                Concept B: Shared Architectural Scale
+              </button>
+            </div>
+          </div>
+
+          <!-- Split Hero Grid: Left 7 Cols Flat-Vector Illustration | Right 5 Cols Editorial Welcome -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            
+            <!-- LEFT 7 COLS: Flat-Vector Human Debate Illustration Container -->
+            <div class="lg:col-span-7 flex flex-col items-center">
+              
+              <!-- ============================================================= -->
+              <!-- CONCEPT A SVG: THE TANGLED KNOT TO CLEAR BLUEPRINT            -->
+              <!-- ============================================================= -->
+              <div id="hero-concept-a-wrap" class="w-full">
+                <svg viewBox="0 0 680 430" class="w-full h-auto block select-none" role="img" aria-label="Concept A: Two flat-vector debaters stand on opposite sides projecting contrasting geometric stances—a warm amber triangle and a deep teal circle. Their tangled argument threads pass through the central AI Socratic Lens and emerge above as a structured, interlocking blueprint.">
+                  <defs>
+                    <radialGradient id="lensGlowA" cx="50%" cy="50%" r="50%">
+                      <stop offset="0%" stop-color="#2B5B4E" stop-opacity="0.18" />
+                      <stop offset="100%" stop-color="#2B5B4E" stop-opacity="0" />
+                    </radialGradient>
+                  </defs>
+
+                  <!-- Soft Floor Shadow -->
+                  <ellipse cx="340" cy="402" rx="285" ry="10" fill="#E4E0D8" opacity="0.65" />
+
+                  <!-- ======================================================= -->
+                  <!-- LEFT CHARACTER (Side A — Holds Warm Amber Triangle)     -->
+                  <!-- ======================================================= -->
+                  <g class="hotspot-node" onclick="setHeroStage(0)">
+                    <!-- Flowing Dark Hair -->
+                    <path d="M 102 184 C 82 174, 68 192, 64 216 C 60 238, 38 242, 34 224 C 30 198, 56 180, 76 188 C 88 170, 108 172, 112 184 Z" fill="#18181B" />
+                    <!-- Ankles & Flat Shoes -->
+                    <path d="M 106 320 L 86 394" stroke="#F4B183" stroke-width="11" stroke-linecap="round" />
+                    <path d="M 142 316 L 172 390" stroke="#F4B183" stroke-width="11" stroke-linecap="round" />
+                    <path d="M 74 398 L 96 398 L 92 388 L 78 390 Z" fill="#18181B" />
+                    <path d="M 166 396 L 188 392 L 182 383 L 166 388 Z" fill="#18181B" />
+
+                    <!-- Tailored Dark Trousers -->
+                    <path d="M 94 278 L 84 368 L 106 370 L 124 308 L 154 366 L 172 358 L 142 276 Z" fill="var(--c-hero-trouser)" />
+
+                    <!-- Warm Terracotta/Amber Color-Blocked Top -->
+                    <path d="M 100 212 C 90 232, 88 264, 92 282 L 146 278 C 148 252, 142 222, 130 210 Z" fill="var(--c-hero-cloth-a)" />
+                    <path d="M 104 214 L 130 230 L 120 250 L 94 234 Z" fill="#FBBF24" />
+                    <path d="M 128 212 L 156 226 L 148 246 L 124 232 Z" fill="#FBBF24" />
+
+                    <!-- Neck & Calm Profile Head -->
+                    <path d="M 114 196 L 118 214 L 130 212 L 126 194 Z" fill="#F4B183" />
+                    <circle cx="122" cy="186" r="15" fill="#F4B183" />
+                    <path d="M 107 188 C 106 170, 130 166, 136 180 C 128 178, 118 182, 110 192 Z" fill="#18181B" />
+
+                    <!-- Engaged Arms Presenting Geometric Thesis Triangle -->
+                    <path d="M 116 236 L 146 250 L 178 228" fill="none" stroke="#F4B183" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M 144 232 L 182 210" fill="none" stroke="#F4B183" stroke-width="10" stroke-linecap="round" />
+
+                    <!-- Floating Amber Thesis Triangle (Proposition A) -->
+                    <g class="svg-float">
+                      <polygon points="196,162 170,210 222,210" fill="#F59E0B" stroke="#FFFFFF" stroke-width="2.5" stroke-linejoin="round" />
+                      <text x="196" y="201" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#FFFFFF">A</text>
+                    </g>
+                  </g>
+
+                  <!-- ======================================================= -->
+                  <!-- TANGLED SPEECH KNOT ENTERING THE CENTRAL LENS           -->
+                  <!-- ======================================================= -->
+                  <g class="hotspot-node" onclick="setHeroStage(1)">
+                    <!-- Amber Tangled Wave from Left Character -->
+                    <path d="M 218 192 C 246 155, 252 245, 276 196 C 292 165, 294 225, 312 204" fill="none" stroke="#D97706" stroke-width="3" stroke-linecap="round" class="svg-flow-line" />
+                    <path d="M 218 198 C 242 232, 264 162, 286 214 C 298 232, 304 190, 312 206" fill="none" stroke="#F59E0B" stroke-width="2" opacity="0.65" />
+
+                    <!-- Teal Tangled Wave from Right Character -->
+                    <path d="M 462 192 C 434 235, 428 152, 404 198 C 388 230, 386 174, 368 204" fill="none" stroke="var(--c-hero-char-b)" stroke-width="3" stroke-linecap="round" class="svg-flow-line" />
+                    <path d="M 462 186 C 438 156, 416 228, 394 182 C 382 166, 376 212, 368 206" fill="none" stroke="#0EA5E9" stroke-width="2" opacity="0.55" />
+
+                    <!-- Central AI Socratic Translating Lens Frame -->
+                    <circle cx="340" cy="204" r="56" fill="url(#lensGlowA)" />
+                    <!-- Pedestal Pillar -->
+                    <path d="M 332 250 L 348 250 L 354 396 L 326 396 Z" fill="#E4E0D8" />
+                    <rect x="310" y="392" width="60" height="8" rx="4" fill="#A8A29E" />
+
+                    <!-- Octagonal/Circular Socratic Prism Ring -->
+                    <circle cx="340" cy="204" r="34" fill="#FFFFFF" stroke="var(--c-accent)" stroke-width="4" />
+                    <circle cx="340" cy="204" r="24" fill="#FAF9F6" stroke="#D97706" stroke-width="1.8" stroke-dasharray="4 3" />
+                    <!-- Prism Core Alignment Crosshair -->
+                    <line x1="324" y1="204" x2="356" y2="204" stroke="var(--c-accent)" stroke-width="2" />
+                    <line x1="340" y1="188" x2="340" y2="220" stroke="var(--c-accent)" stroke-width="2" />
+                    <circle cx="340" cy="204" r="5" fill="var(--c-accent)" />
+                  </g>
+
+                  <!-- ======================================================= -->
+                  <!-- EMERGING UNIFIED INTERLOCKING BLUEPRINT (Top Center)    -->
+                  <!-- ======================================================= -->
+                  <g class="hotspot-node" onclick="setHeroStage(2)">
+                    <!-- Clean Parallel Vertical Synthesis Beams Rising from Lens -->
+                    <line x1="332" y1="168" x2="332" y2="122" stroke="#D97706" stroke-width="2.5" stroke-dasharray="3 3" />
+                    <line x1="348" y1="168" x2="348" y2="122" stroke="var(--c-accent)" stroke-width="2.5" stroke-dasharray="3 3" />
+
+                    <!-- Elevated Blueprint Card -->
+                    <g class="svg-float">
+                      <rect x="255" y="36" width="170" height="86" rx="14" fill="#FFFFFF" stroke="var(--c-accent)" stroke-width="2.5" />
+                      <!-- Blueprint Grid Lines -->
+                      <line x1="270" y1="60" x2="410" y2="60" stroke="#E4E0D8" stroke-width="1" />
+                      <line x1="270" y1="98" x2="410" y2="98" stroke="#E4E0D8" stroke-width="1" />
+
+                      <!-- Interlocking Amber Triangle + Teal Circle Inside Blueprint -->
+                      <polygon points="324,52 302,92 346,92" fill="#F59E0B" fill-opacity="0.88" />
+                      <circle cx="354" cy="74" r="20" fill="var(--c-hero-char-b)" fill-opacity="0.85" />
+                      <!-- Intersection Highlight Crux Dot -->
+                      <circle cx="337" cy="76" r="5" fill="#FFFFFF" stroke="#18181B" stroke-width="2" />
+                      <text x="340" y="113" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" fill="#18181B">SHARED CRUX v1.1</text>
+                    </g>
+                  </g>
+
+                  <!-- ======================================================= -->
+                  <!-- RIGHT CHARACTER (Side B — Holds Deep Teal Circle)       -->
+                  <!-- ======================================================= -->
+                  <g class="hotspot-node" onclick="setHeroStage(0)">
+                    <!-- Ankles & Flat Shoes -->
+                    <path d="M 526 322 L 518 394" stroke="#F4B183" stroke-width="11" stroke-linecap="round" />
+                    <path d="M 576 322 L 586 394" stroke="#F4B183" stroke-width="11" stroke-linecap="round" />
+                    <path d="M 502 398 L 526 398 L 524 388 L 508 390 Z" fill="#18181B" />
+                    <path d="M 578 398 L 602 398 L 596 390 L 580 388 Z" fill="#18181B" />
+
+                    <!-- Left Arm Presenting Teal Circle & Right Hand Calmly on Hip -->
+                    <path d="M 526 212 L 496 238 L 478 214" fill="none" stroke="#F4B183" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M 576 212 L 606 246 L 588 286" fill="none" stroke="#F4B183" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" />
+
+                    <!-- Sleeves -->
+                    <path d="M 516 204 L 496 228 L 510 240 L 528 218 Z" fill="#E4E0D8" />
+                    <path d="M 572 204 L 598 232 L 582 246 L 564 220 Z" fill="#E4E0D8" />
+
+                    <!-- Tailored Dark Trousers -->
+                    <path d="M 522 284 L 514 386 L 534 386 L 552 314 L 574 386 L 594 386 L 584 284 Z" fill="var(--c-hero-trouser)" />
+
+                    <!-- Forest Teal Color-Blocked Tunic -->
+                    <path d="M 522 200 L 580 200 L 586 288 L 518 288 Z" fill="var(--c-hero-cloth-b)" />
+                    <path d="M 536 200 C 538 216, 564 216, 566 200 Z" fill="#18181B" />
+
+                    <!-- Neck & Calm Head -->
+                    <rect x="544" y="182" width="13" height="20" rx="5" fill="#F4B183" />
+                    <circle cx="550" cy="172" r="15.5" fill="#F4B183" />
+                    <path d="M 535 165 C 533 148, 560 144, 567 158 C 573 166, 567 180, 560 178 C 560 168, 548 163, 535 165 Z" fill="#18181B" />
+
+                    <!-- Floating Deep Teal Thesis Circle (Counter-Position B) -->
+                    <g class="svg-float" style="animation-delay: 0.5s;">
+                      <circle cx="484" cy="190" r="23" fill="var(--c-hero-char-b)" stroke="#FFFFFF" stroke-width="2.5" />
+                      <text x="484" y="194" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#FFFFFF">B</text>
+                    </g>
+                  </g>
+
+                  <!-- Interactive Hotspot Labels -->
+                  <g onclick="setHeroStage(0)" class="cursor-pointer">
+                    <rect x="134" y="122" width="114" height="24" rx="12" fill="#FFFFFF" stroke="#D97706" stroke-width="1.5" />
+                    <text x="191" y="138" text-anchor="middle" font-family="Plus Jakarta Sans, sans-serif" font-size="10" font-weight="700" fill="#9A5B13">1. Raw Premises</text>
+                  </g>
+                  <g onclick="setHeroStage(1)" class="cursor-pointer">
+                    <rect x="282" y="264" width="116" height="24" rx="12" fill="#FFFFFF" stroke="var(--c-accent)" stroke-width="1.5" />
+                    <text x="340" y="280" text-anchor="middle" font-family="Plus Jakarta Sans, sans-serif" font-size="10" font-weight="700" fill="var(--c-accent)">2. Socratic Lens</text>
+                  </g>
+                  <g onclick="setHeroStage(2)" class="cursor-pointer">
+                    <rect x="276" y="4" width="128" height="24" rx="12" fill="#FDF6EC" stroke="#D97706" stroke-width="1.5" />
+                    <text x="340" y="20" text-anchor="middle" font-family="Plus Jakarta Sans, sans-serif" font-size="10" font-weight="700" fill="#9A5B13">3. Shared Blueprint</text>
+                  </g>
+                </svg>
+              </div>
+
+              <!-- ============================================================= -->
+              <!-- CONCEPT B SVG: THE SHARED ARCHITECTURAL SCALE & PUZZLE        -->
+              <!-- ============================================================= -->
+              <div id="hero-concept-b-wrap" class="w-full hidden">
+                <svg viewBox="0 0 680 430" class="w-full h-auto block select-none" role="img" aria-label="Concept B: Two flat-vector debaters collaborate from opposite sides to place contrasting architectural puzzle blocks onto a central Socratic balance scale and fulcrum, testing and calibrating their premises together.">
+                  <!-- Soft Floor Shadow -->
+                  <ellipse cx="340" cy="402" rx="285" ry="10" fill="#E4E0D8" opacity="0.65" />
+
+                  <!-- ======================================================= -->
+                  <!-- CENTRAL ARCHITECTURAL FULCRUM & BALANCED SCALE BEAM     -->
+                  <!-- ======================================================= -->
+                  <g class="hotspot-node" onclick="setHeroStage(1)">
+                    <!-- Stepped Architectural Base & Fulcrum Pillar -->
+                    <rect x="275" y="388" width="130" height="12" rx="4" fill="#D6D1C7" />
+                    <rect x="295" y="376" width="90" height="12" rx="3" fill="#E4E0D8" />
+                    <polygon points="340,232 312,376 368,376" fill="var(--c-accent)" opacity="0.9" />
+                    <circle cx="340" cy="235" r="10" fill="#FFFFFF" stroke="#18181B" stroke-width="3" />
+
+                    <!-- Gently Swaying Balance Beam with Interlocking Puzzle Keystone -->
+                    <g class="svg-balance-beam">
+                      <!-- Main Horizontal Balance Beam -->
+                      <rect x="200" y="229" width="280" height="10" rx="5" fill="#18181B" />
+                      <!-- Left Scale Tray -->
+                      <line x1="226" y1="239" x2="226" y2="262" stroke="#18181B" stroke-width="2.5" />
+                      <rect x="192" y="260" width="68" height="8" rx="4" fill="#78716C" />
+                      <!-- Right Scale Tray -->
+                      <line x1="454" y1="239" x2="454" y2="262" stroke="#18181B" stroke-width="2.5" />
+                      <rect x="420" y="260" width="68" height="8" rx="4" fill="#78716C" />
+
+                      <!-- Left Puzzle Block Placed on Scale (Proposition A Counter-Weight) -->
+                      <path d="M 200 212 L 246 212 L 246 226 C 254 226, 254 238, 246 238 L 246 260 L 200 260 Z" fill="#F59E0B" stroke="#FFFFFF" stroke-width="2" />
+                      <text x="223" y="241" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#FFFFFF">v1.0</text>
+
+                      <!-- Right Puzzle Block Placed on Scale (Counter-Position B Counter-Weight) -->
+                      <path d="M 434 212 L 480 212 L 480 260 L 434 260 L 434 238 C 426 238, 426 226, 434 226 Z" fill="var(--c-hero-char-b)" stroke="#FFFFFF" stroke-width="2" />
+                      <text x="457" y="241" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#FFFFFF">v1.0</text>
+
+                      <!-- Center Interlocking Architectural Arch above Fulcrum -->
+                      <g onclick="setHeroStage(2)">
+                        <path d="M 304 228 L 304 152 C 304 134, 340 134, 340 152 L 340 228 Z" fill="#F59E0B" opacity="0.92" />
+                        <path d="M 340 228 L 340 152 C 340 134, 376 134, 376 152 L 376 228 Z" fill="var(--c-hero-char-b)" opacity="0.92" />
+                        <!-- Puzzle Tab Locking Center Arch Together -->
+                        <circle cx="340" cy="184" r="9" fill="#F59E0B" stroke="#FFFFFF" stroke-width="2" />
+                        <rect x="308" y="110" width="64" height="22" rx="11" fill="#FFFFFF" stroke="var(--c-accent)" stroke-width="2" />
+                        <text x="340" y="125" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" fill="#18181B">&Delta; BALANCED</text>
+                      </g>
+                    </g>
+                  </g>
+
+                  <!-- ======================================================= -->
+                  <!-- LEFT CHARACTER (Side A — Stepping Forward w/ Block)     -->
+                  <!-- ======================================================= -->
+                  <g class="hotspot-node" onclick="setHeroStage(0)">
+                    <path d="M 96 182 C 76 172, 62 190, 58 214 C 54 236, 34 240, 30 222 C 26 196, 52 178, 72 186 C 84 168, 102 170, 106 182 Z" fill="#18181B" />
+                    <path d="M 102 320 L 84 394" stroke="#F4B183" stroke-width="11" stroke-linecap="round" />
+                    <path d="M 138 316 L 168 390" stroke="#F4B183" stroke-width="11" stroke-linecap="round" />
+                    <path d="M 72 398 L 94 398 L 90 388 L 76 390 Z" fill="#18181B" />
+                    <path d="M 162 396 L 184 392 L 178 383 L 162 388 Z" fill="#18181B" />
+                    <path d="M 90 278 L 80 368 L 102 370 L 120 308 L 150 366 L 168 358 L 138 276 Z" fill="var(--c-hero-trouser)" />
+                    <path d="M 96 212 C 86 232, 84 264, 88 282 L 142 278 C 144 252, 138 222, 126 210 Z" fill="var(--c-hero-cloth-a)" />
+                    <path d="M 110 196 L 114 214 L 126 212 L 122 194 Z" fill="#F4B183" />
+                    <circle cx="118" cy="186" r="15" fill="#F4B183" />
+                    <path d="M 103 188 C 102 170, 126 166, 132 180 C 124 178, 114 182, 106 192 Z" fill="#18181B" />
+                    <!-- Reaching Arms Placing Amber Boundary Block -->
+                    <path d="M 122 232 L 162 238 L 194 226" fill="none" stroke="#F4B183" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" />
+                  </g>
+
+                  <!-- ======================================================= -->
+                  <!-- RIGHT CHARACTER (Side B — Calibrating Teal Block)       -->
+                  <!-- ======================================================= -->
+                  <g class="hotspot-node" onclick="setHeroStage(0)">
+                    <path d="M 530 322 L 522 394" stroke="#F4B183" stroke-width="11" stroke-linecap="round" />
+                    <path d="M 578 322 L 588 394" stroke="#F4B183" stroke-width="11" stroke-linecap="round" />
+                    <path d="M 506 398 L 530 398 L 528 388 L 512 390 Z" fill="#18181B" />
+                    <path d="M 580 398 L 604 398 L 598 390 L 582 388 Z" fill="#18181B" />
+                    <!-- Reaching Arm Calibrating Right Scale Tray -->
+                    <path d="M 532 216 L 502 236 L 478 226" fill="none" stroke="#F4B183" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M 578 214 L 606 248 L 590 286" fill="none" stroke="#F4B183" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M 526 284 L 518 386 L 538 386 L 556 314 L 576 386 L 596 386 L 586 284 Z" fill="var(--c-hero-trouser)" />
+                    <path d="M 526 200 L 582 200 L 588 288 L 522 288 Z" fill="var(--c-hero-cloth-b)" />
+                    <rect x="546" y="182" width="13" height="20" rx="5" fill="#F4B183" />
+                    <circle cx="552" cy="172" r="15.5" fill="#F4B183" />
+                    <path d="M 537 165 C 535 148, 562 144, 569 158 C 575 166, 569 180, 562 178 C 562 168, 550 163, 537 165 Z" fill="#18181B" />
+                  </g>
+
+                  <!-- Interactive Hotspot Labels -->
+                  <g onclick="setHeroStage(0)" class="cursor-pointer">
+                    <rect x="136" y="148" width="124" height="24" rx="12" fill="#FFFFFF" stroke="#D97706" stroke-width="1.5" />
+                    <text x="198" y="164" text-anchor="middle" font-family="Plus Jakarta Sans, sans-serif" font-size="10" font-weight="700" fill="#9A5B13">1. Contrasting Weights</text>
+                  </g>
+                  <g onclick="setHeroStage(1)" class="cursor-pointer">
+                    <rect x="278" y="340" width="124" height="24" rx="12" fill="#FFFFFF" stroke="var(--c-accent)" stroke-width="1.5" />
+                    <text x="340" y="356" text-anchor="middle" font-family="Plus Jakarta Sans, sans-serif" font-size="10" font-weight="700" fill="var(--c-accent)">2. Socratic Fulcrum</text>
+                  </g>
+                  <g onclick="setHeroStage(2)" class="cursor-pointer">
+                    <rect x="274" y="64" width="132" height="24" rx="12" fill="#FDF6EC" stroke="#D97706" stroke-width="1.5" />
+                    <text x="340" y="80" text-anchor="middle" font-family="Plus Jakarta Sans, sans-serif" font-size="10" font-weight="700" fill="#9A5B13">3. Interlocking Arch</text>
+                  </g>
+                </svg>
+              </div>
+
+              <!-- Interactive Stage Pills Below Illustration -->
+              <div class="flex flex-wrap items-center justify-center gap-2 mt-3">
+                <button type="button" onclick="setHeroStage(0)" id="hero-pill-0" class="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-ink text-white shadow-xs transition-all">
+                  1. Surface Premises
+                </button>
+                <button type="button" onclick="setHeroStage(1)" id="hero-pill-1" class="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-subtle hover:bg-borderwarm text-stone-700 transition-all">
+                  2. Steel-Man Gate
+                </button>
+                <button type="button" onclick="setHeroStage(2)" id="hero-pill-2" class="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-subtle hover:bg-borderwarm text-stone-700 transition-all">
+                  3. Build Shared Crux
+                </button>
+              </div>
+            </div>
+
+            <!-- RIGHT 5 COLS: Editorial Welcome Copy & Primary Actions -->
+            <div class="lg:col-span-5 space-y-5 text-left">
+              <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-subtle border border-borderwarm text-[11px] font-mono uppercase tracking-wider text-accent font-semibold">
+                <span class="w-2 h-2 rounded-full bg-accent"></span>
+                <span id="hero-concept-tag">Concept A &bull; Epistemic Blueprint</span>
+              </div>
+
+              <h1 class="font-editorial text-3xl sm:text-5xl font-medium tracking-tight text-ink leading-[1.12]">
+                Clarify what you mean before you argue.
+              </h1>
+
+              <div class="border-b border-dashed border-stone-300 w-full max-w-sm"></div>
+
+              <div class="space-y-2.5">
+                <h2 id="hero-svg-caption-title" class="font-editorial text-xl font-medium text-accent">
+                  1. Surface Unstated Premises Privately
+                </h2>
+                <p id="hero-stage-description" class="text-sm text-stone-600 leading-relaxed">
+                  Crux sits between two humans as a Socratic Referee. Before your turn goes live, it privately flags hidden assumptions and cognitive leaps, enforces charitable steel-manning, and maps the exact root crux of disagreement.
+                </p>
+                <p id="hero-svg-caption-sub" class="text-xs font-mono text-stone-500">
+                  Switch between Concept A &amp; Concept B above, or click any hotspot on the graphic.
+                </p>
+              </div>
+
+              <!-- Primary Action Buttons -->
+              <div class="pt-2 flex flex-wrap items-center gap-3">
+                <button onclick="navigate('start')" class="px-5 py-2.5 rounded-xl bg-accent hover:bg-accent/90 text-white text-xs font-semibold uppercase tracking-wider shadow-xs transition-all">
+                  Start / Pair Debate &rarr;
+                </button>
+                <button onclick="navigate('arena')" class="px-5 py-2.5 rounded-xl bg-subtle hover:bg-borderwarm border border-borderwarm text-ink text-xs font-semibold uppercase tracking-wider transition-all">
+                  Explore Debate Arena
+                </button>
+              </div>
+
+              <!-- Quick Feature Cards -->
+              <div class="pt-3 grid grid-cols-3 gap-2 text-[11px]">
+                <div class="p-2.5 rounded-xl bg-paper border border-borderwarm">
+                  <div class="font-semibold text-ink">Private Audit</div>
+                  <div class="text-stone-500 mt-0.5">Flags biases before you post</div>
+                </div>
+                <div class="p-2.5 rounded-xl bg-paper border border-borderwarm">
+                  <div class="font-semibold text-ink">Steel-Man Gate</div>
+                  <div class="text-stone-500 mt-0.5">No strawman replies allowed</div>
+                </div>
+                <div class="p-2.5 rounded-xl bg-paper border border-borderwarm">
+                  <div class="font-semibold text-ink">Fact vs. Value</div>
+                  <div class="text-stone-500 mt-0.5">Built-in empirical lookup</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- VIEW 2: DEBATE ARENA (Ongoing Public Room Switcher + Two-Pane Arena)  -->
+      <!-- ===================================================================== -->
+      <section id="view-arena" class="hidden space-y-4 animate-view-in">
+
+        <!-- Ongoing Public Debates Switcher Strip -->
+        <div class="bg-white border border-borderwarm rounded-2xl p-4 shadow-xs space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+              <h2 class="text-xs font-semibold uppercase tracking-wider text-ink">What's On &bull; Ongoing Public Debates</h2>
+              <span class="text-xs text-stone-500 hidden sm:inline">Switch between isolated rooms to witness or take over an open seat</span>
+            </div>
+            <button onclick="navigate('start')" class="text-xs font-medium text-accent hover:underline">
+              + Start / Pair New Room
+            </button>
+          </div>
+          <div id="arena-room-switcher" class="grid grid-cols-1 md:grid-cols-3 gap-3"></div>
+        </div>
+
+        <!-- Active vs Witnessing/Archive Mode Banner -->
+        <div id="arena-mode-banner" class="rounded-xl px-4 py-2.5 border flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div class="flex items-center gap-2.5">
+            <span id="mode-indicator-dot" class="w-2.5 h-2.5 rounded-full"></span>
+            <span id="mode-indicator-title" class="font-semibold">Active Participant Mode</span>
+            <span id="mode-indicator-desc" class="text-stone-600 hidden sm:inline">You are arguing as Side A. Changes sync live.</span>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2">
+            <div class="inline-flex rounded-lg border border-borderwarm bg-white p-0.5">
+              <button onclick="switchRole('A')" id="role-btn-A" class="px-2.5 py-1 rounded-md text-[11px] font-medium bg-ink text-white">Side A</button>
+              <button onclick="switchRole('B')" id="role-btn-B" class="px-2.5 py-1 rounded-md text-[11px] font-medium text-stone-600 hover:text-ink">Side B</button>
+              <button onclick="switchRole('observer')" id="role-btn-observer" class="px-2.5 py-1 rounded-md text-[11px] font-medium text-stone-600 hover:text-ink">Witness / Archive</button>
+            </div>
+
+            <button id="btn-takeover" onclick="takeOverDebate()" class="hidden px-3 py-1 rounded-lg bg-ambermuted text-white font-medium hover:opacity-90">
+              Take Over Debate
+            </button>
+
+            <button onclick="openFactModal()" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white border border-borderwarm hover:bg-subtle font-medium text-ink">
+              <svg class="w-3.5 h-3.5 text-accent" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" />
+              </svg>
+              <span>Fact &amp; Data Lookup</span>
+            </button>
+
+            <button onclick="toggleCruxDrawer()" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white border border-borderwarm hover:bg-subtle font-medium text-ink">
+              <span>Crux Map</span>
+              <span id="crux-badge-count" class="px-1.5 py-0.2 rounded-full bg-accentlight text-accent font-mono text-[10px]">4</span>
+            </button>
+
+            <button onclick="openExportModal()" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-accent text-white hover:bg-accent/90 font-medium">
+              <span>Export Artifact</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Slow Async Digest Strip -->
+        <div id="async-digest-strip" class="hidden rounded-xl bg-amberbg border border-amber-200 px-4 py-2 text-xs text-ambermuted flex items-center justify-between">
+          <span><strong>Slow Async Digest:</strong> Partner refined stance boundaries and pinned 1 empirical crux since last check.</span>
+          <span class="font-mono text-[11px]">Async Turn Window: 24h</span>
+        </div>
+
+        <!-- Living Stance Evolution Header -->
+        <div class="bg-white border border-borderwarm rounded-2xl p-4 sm:p-5 shadow-xs space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] font-mono uppercase tracking-wider text-stone-400">Living Stance Evolution</span>
+                <span id="arena-room-pill" class="px-2 py-0.2 rounded bg-subtle font-mono text-[11px] font-semibold text-ink">#CRX-842</span>
+              </div>
+              <h2 id="arena-topic-heading" class="font-editorial text-lg sm:text-xl font-medium text-ink mt-0.5">Topic</h2>
+            </div>
+            <button onclick="toggleVersionHistory()" class="text-xs font-medium text-accent hover:underline">
+              View Stance Version Diffs
+            </button>
+          </div>
+
+          <!-- Central AI Distillation Strip -->
+          <div class="px-3.5 py-2 rounded-xl bg-accentlight/55 border border-accent/20 flex flex-wrap items-center justify-between gap-2 text-xs">
+            <div>
+              <span class="font-semibold text-accent uppercase font-mono text-[10px] mr-1.5">Central Crux:</span>
+              <span id="arena-central-distillation" class="text-ink"></span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <!-- Side A Thesis Box -->
+            <div class="p-3.5 rounded-xl bg-paper border border-borderwarm space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-ink">Proposition A &bull; <span id="stance-a-version" class="font-mono text-accent">v1.0</span></span>
+                <button onclick="openRefineStanceModal('A')" id="btn-refine-a" class="text-[11px] font-medium text-accent hover:underline">Refine Stance</button>
+              </div>
+              <p id="arena-stance-a-text" class="text-xs sm:text-sm text-stone-800 leading-relaxed"></p>
+            </div>
+
+            <!-- Side B Thesis Box -->
+            <div class="p-3.5 rounded-xl bg-paper border border-borderwarm space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-ink">Counter-Position B &bull; <span id="stance-b-version" class="font-mono text-accent">v1.0</span></span>
+                <button onclick="openRefineStanceModal('B')" id="btn-refine-b" class="text-[11px] font-medium text-accent hover:underline">Refine Stance</button>
+              </div>
+              <p id="arena-stance-b-text" class="text-xs sm:text-sm text-stone-800 leading-relaxed"></p>
+            </div>
+          </div>
+
+          <!-- Collapsible Word-Level Diff Changelog -->
+          <div id="stance-diff-history" class="hidden pt-2 border-t border-borderwarm space-y-2 text-xs">
+            <div class="font-semibold text-stone-600">Stance Evolution Changelog (Word-Level Diff):</div>
+            <div id="stance-diff-list" class="space-y-1.5"></div>
+          </div>
+        </div>
+
+        <!-- Mobile Segmented Switcher -->
+        <div class="grid grid-cols-2 gap-1 p-1 rounded-xl bg-subtle border border-borderwarm lg:hidden">
+          <button onclick="setMobilePane('A')" id="mobile-tab-a" class="py-1.5 rounded-lg text-xs font-semibold bg-white text-ink shadow-xs">Proposition A</button>
+          <button onclick="setMobilePane('B')" id="mobile-tab-b" class="py-1.5 rounded-lg text-xs font-semibold text-stone-600">Counter-Position B</button>
+        </div>
+
+        <!-- Main Arena Grid: Two-Pane Parallel Dialogue + Collapsible Right-Side Crux Map -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+          
+          <div id="dialogue-columns-wrapper" class="lg:col-span-12 grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <!-- LEFT PANE: Proposition A -->
+            <div id="pane-A" class="block lg:block bg-white border border-borderwarm rounded-2xl p-4 sm:p-5 shadow-xs space-y-4">
+              <div class="flex items-center justify-between border-b border-borderwarm pb-2.5">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-accent"></span>
+                  <h3 class="font-editorial text-lg font-medium text-ink">Proposition A</h3>
+                </div>
+                <span class="text-[11px] font-mono text-stone-500" id="count-turns-a">0 turns</span>
+              </div>
+              <div id="turns-list-A" class="space-y-3.5 max-h-[540px] overflow-y-auto custom-scroll pr-1"></div>
+            </div>
+
+            <!-- RIGHT PANE: Counter-Position B -->
+            <div id="pane-B" class="hidden lg:block bg-white border border-borderwarm rounded-2xl p-4 sm:p-5 shadow-xs space-y-4">
+              <div class="flex items-center justify-between border-b border-borderwarm pb-2.5">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-ambermuted"></span>
+                  <h3 class="font-editorial text-lg font-medium text-ink">Counter-Position B</h3>
+                </div>
+                <span class="text-[11px] font-mono text-stone-500" id="count-turns-b">0 turns</span>
+              </div>
+              <div id="turns-list-B" class="space-y-3.5 max-h-[540px] overflow-y-auto custom-scroll pr-1"></div>
+            </div>
+          </div>
+
+          <!-- COLLAPSIBLE RIGHT-SIDE LIVING CRUX MAP INSPECTOR -->
+          <aside id="crux-inspector-panel" class="hidden lg:col-span-4 bg-white border border-borderwarm rounded-2xl p-4 sm:p-5 shadow-xs space-y-4">
+            <div class="flex items-center justify-between border-b border-borderwarm pb-2.5">
+              <div>
+                <h3 class="font-editorial text-lg font-medium text-ink">Living Crux Map</h3>
+                <p class="text-[11px] text-stone-500">Click any premise to jump to its source turn.</p>
+              </div>
+              <button onclick="recalculateCruxAI()" class="px-2.5 py-1 rounded-lg bg-accentlight text-accent text-xs font-medium hover:bg-accent hover:text-white transition-colors">
+                Recalculate
+              </button>
+            </div>
+
+            <details open class="group border border-borderwarm rounded-xl bg-paper p-3">
+              <summary class="cursor-pointer text-xs font-semibold text-ink flex items-center justify-between">
+                <span>Fundamental Value Cruxes</span>
+                <span class="text-stone-400 group-open:rotate-180 transition-transform">&#9662;</span>
+              </summary>
+              <div id="crux-values-list" class="mt-2.5 space-y-2 text-xs text-stone-700"></div>
+            </details>
+
+            <details open class="group border border-borderwarm rounded-xl bg-paper p-3">
+              <summary class="cursor-pointer text-xs font-semibold text-ink flex items-center justify-between">
+                <span>Established Shared Ground</span>
+                <span class="text-stone-400 group-open:rotate-180 transition-transform">&#9662;</span>
+              </summary>
+              <div id="crux-shared-list" class="mt-2.5 space-y-2 text-xs text-stone-700"></div>
+            </details>
+
+            <details open class="group border border-borderwarm rounded-xl bg-paper p-3">
+              <summary class="cursor-pointer text-xs font-semibold text-ink flex items-center justify-between">
+                <span>Extracted Premise Ledger</span>
+                <span class="text-stone-400 group-open:rotate-180 transition-transform">&#9662;</span>
+              </summary>
+              <div id="crux-ledger-list" class="mt-2.5 space-y-2 text-xs"></div>
+            </details>
+          </aside>
+        </div>
+
+        <!-- STEPPED BOTTOM TURN COMPOSER DOCK -->
+        <div id="stepped-composer-dock" class="bg-white border border-borderwarm rounded-2xl p-4 sm:p-5 shadow-sm space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-borderwarm pb-2.5">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-semibold uppercase tracking-wider text-ink">Turn Composer</span>
+              <span id="composer-posting-as" class="px-2 py-0.5 rounded bg-subtle font-mono text-[11px] text-stone-700">Posting to Proposition A</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <label for="composer-role-tag" class="text-[11px] text-stone-500">Role Tag:</label>
+              <select id="composer-role-tag" class="text-xs bg-paper border border-borderwarm rounded-lg px-2 py-1 text-ink focus:outline-none">
+                <option value="[Core Argument]">[Core Argument]</option>
+                <option value="[Boundary Clarification]">[Boundary Clarification]</option>
+                <option value="[Empirical Counter-Check]">[Empirical Counter-Check]</option>
+                <option value="[Steel-Man Concession]">[Steel-Man Concession]</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- STEP 1: COMPREHENSION GATE -->
+          <div id="gate-step-container" class="p-3.5 rounded-xl bg-amberbg/75 border border-amber-200 space-y-2.5">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <span class="text-xs font-semibold text-ambermuted">Step 1 &bull; Comprehension Gate (Steel-Man Opponent First)</span>
+              <button onclick="quickVerifySteelMan()" class="text-[11px] font-medium text-ambermuted underline hover:text-ink">
+                Accept AI Distillation (+15 Karma)
+              </button>
+            </div>
+            <p id="gate-opponent-summary" class="text-xs text-stone-700 italic"></p>
+            <div class="flex flex-col sm:flex-row gap-2">
+              <input id="gate-steelman-input" type="text" placeholder="Summarize your opponent's strongest point in 1 charitable sentence..." class="flex-1 px-3 py-2 rounded-lg border border-amber-300 bg-white text-xs text-ink focus:outline-none" onkeydown="if(event.key==='Enter') verifyCustomSteelMan()" />
+              <button onclick="verifyCustomSteelMan()" class="px-3.5 py-2 rounded-lg bg-ambermuted text-white text-xs font-medium hover:opacity-90 shrink-0">
+                Verify Steel-Man
+              </button>
+            </div>
+          </div>
+
+          <!-- VERIFIED COLLAPSED BADGE -->
+          <div id="gate-verified-badge" class="hidden px-3.5 py-2 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-between text-xs text-emerald-800">
+            <div class="flex items-center gap-2">
+              <span class="font-bold">&#10003;</span>
+              <span><strong>Step 1 Cleared:</strong> Opponent stance steel-manned charitably.</span>
+            </div>
+            <button onclick="resetSteelManGate()" class="text-[11px] underline text-emerald-700">Re-open Gate</button>
+          </div>
+
+          <!-- STEP 2: DRAFT & PRIVATE PRE-FLIGHT AUDIT -->
+          <div id="draft-step-container" class="space-y-3 opacity-50 pointer-events-none transition-opacity">
+            <textarea id="composer-draft-input" rows="3" placeholder="Write your argument clearly. The AI will privately flag unstated assumptions or broad generalizations before you post..." class="w-full px-3.5 py-2.5 rounded-xl border border-borderwarm bg-paper text-sm text-ink focus:outline-none focus:border-accent"></textarea>
+
+            <div id="preflight-audit-box" class="hidden p-4 rounded-xl bg-subtle border border-borderwarm space-y-3">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <span class="text-xs font-semibold text-ink">Private AI Pre-Flight Audit (Visible Only to You)</span>
+                <button onclick="runPreFlightAudit()" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-borderwarm text-[11px] font-medium text-ink hover:bg-paper">
+                  <span>&#8635; Refresh AI Assumption Flag</span>
+                </button>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                <div class="p-2.5 rounded-lg bg-white border border-borderwarm">
+                  <span class="block text-[10px] font-mono uppercase text-stone-400">Unstated Assumption</span>
+                  <p id="audit-assumption-text" class="text-stone-700 mt-1"></p>
+                </div>
+                <div class="p-2.5 rounded-lg bg-white border border-borderwarm">
+                  <span class="block text-[10px] font-mono uppercase text-stone-400">Potential Bias / Leap</span>
+                  <p id="audit-bias-text" class="text-ambermuted mt-1"></p>
+                </div>
+                <div class="p-2.5 rounded-lg bg-white border border-borderwarm">
+                  <span class="block text-[10px] font-mono uppercase text-stone-400">Socratic Boundary Prompt</span>
+                  <p id="audit-socratic-text" class="text-accent mt-1"></p>
+                </div>
+              </div>
+              <div id="audit-apply-refinement-row" class="hidden flex flex-wrap items-center justify-between gap-2 bg-accentlight/70 border border-accent/20 rounded-lg px-3 py-2 text-xs">
+                <span class="text-accent font-medium" id="audit-suggested-rewrite"></span>
+                <button onclick="applySuggestedRefinement()" class="px-2.5 py-1 rounded bg-accent text-white text-[11px] font-medium shrink-0">Apply Precision</button>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <button onclick="runPreFlightAudit()" class="px-4 py-2 rounded-xl bg-subtle hover:bg-borderwarm border border-borderwarm text-xs font-semibold text-ink transition-colors">
+                Run AI Pre-Flight Audit (+10 Karma)
+              </button>
+              <div class="flex flex-wrap items-center gap-2">
+                <button onclick="openFactModal()" class="px-3.5 py-2 rounded-xl bg-white hover:bg-subtle border border-borderwarm text-xs font-medium text-stone-700 transition-colors">
+                  Fact &amp; Data Lookup
+                </button>
+                <button onclick="publishTurn()" class="px-5 py-2 rounded-xl bg-accent hover:bg-accent/90 text-white text-xs font-semibold transition-colors">
+                  Publish to Debate Pane
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+              <span class="text-xs font-semibold text-ink">Proposition A &bull; <span id="stance-a-version" class="font-mono text-accent">v1.0</span></span>
+              <button onclick="openRefineStanceModal('A')" id="btn-refine-a" class="text-[11px] font-medium text-accent hover:underline">Refine Stance</button>
+            </div>
+            <p id="arena-stance-a-text" class="text-xs sm:text-sm text-stone-800 leading-relaxed"></p>
+          </div>
+
+          <!-- Side B Thesis Box -->
+          <div class="p-3.5 rounded-xl bg-paper border border-borderwarm space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-ink">Counter-Position B &bull; <span id="stance-b-version" class="font-mono text-accent">v1.0</span></span>
+              <button onclick="openRefineStanceModal('B')" id="btn-refine-b" class="text-[11px] font-medium text-accent hover:underline">Refine Stance</button>
+            </div>
+            <p id="arena-stance-b-text" class="text-xs sm:text-sm text-stone-800 leading-relaxed"></p>
+          </div>
+        </div>
+
+        <!-- Collapsible Word-Level Diff Changelog -->
+        <div id="stance-diff-history" class="hidden pt-2 border-t border-borderwarm space-y-2 text-xs">
+          <div class="font-semibold text-stone-600">Stance Evolution Changelog (Word-Level Diff):</div>
+          <div id="stance-diff-list" class="space-y-1.5"></div>
+        </div>
+      </div>
+
+      <!-- Mobile Segmented Switcher (Hidden on Desktop lg+) -->
+      <div class="grid grid-cols-2 gap-1 p-1 rounded-xl bg-subtle border border-borderwarm lg:hidden">
+        <button onclick="setMobilePane('A')" id="mobile-tab-a" class="py-1.5 rounded-lg text-xs font-semibold bg-white text-ink shadow-xs">Proposition A</button>
+        <button onclick="setMobilePane('B')" id="mobile-tab-b" class="py-1.5 rounded-lg text-xs font-semibold text-stone-600">Counter-Position B</button>
+      </div>
+
+      <!-- Main Arena Grid: Two-Pane Parallel Dialogue + Collapsible Right-Side Crux Map -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        
+        <!-- Two-Pane Dialogue Columns (Always side-by-side on lg+) -->
+        <div id="dialogue-columns-wrapper" class="lg:col-span-12 grid grid-cols-1 lg:grid-cols-2 gap-5">
+          
+          <!-- LEFT PANE: Proposition A -->
+          <div id="pane-A" class="block lg:block bg-white border border-borderwarm rounded-2xl p-4 sm:p-5 shadow-xs space-y-4">
+            <div class="flex items-center justify-between border-b border-borderwarm pb-2.5">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-accent"></span>
+                <h3 class="font-editorial text-lg font-medium text-ink">Proposition A</h3>
+              </div>
+              <span class="text-[11px] font-mono text-stone-500" id="count-turns-a">0 turns</span>
+            </div>
+            <div id="turns-list-A" class="space-y-3.5 max-h-[540px] overflow-y-auto custom-scroll pr-1"></div>
+          </div>
+
+          <!-- RIGHT PANE: Counter-Position B -->
+          <div id="pane-B" class="hidden lg:block bg-white border border-borderwarm rounded-2xl p-4 sm:p-5 shadow-xs space-y-4">
+            <div class="flex items-center justify-between border-b border-borderwarm pb-2.5">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-ambermuted"></span>
+                <h3 class="font-editorial text-lg font-medium text-ink">Counter-Position B</h3>
+              </div>
+              <span class="text-[11px] font-mono text-stone-500" id="count-turns-b">0 turns</span>
+            </div>
+            <div id="turns-list-B" class="space-y-3.5 max-h-[540px] overflow-y-auto custom-scroll pr-1"></div>
+          </div>
+        </div>
+
+        <!-- COLLAPSIBLE RIGHT-SIDE LIVING CRUX MAP INSPECTOR -->
+        <aside id="crux-inspector-panel" class="hidden lg:col-span-4 bg-white border border-borderwarm rounded-2xl p-4 sm:p-5 shadow-xs space-y-4">
+          <div class="flex items-center justify-between border-b border-borderwarm pb-2.5">
+            <div>
+              <h3 class="font-editorial text-lg font-medium text-ink">Living Crux Map</h3>
+              <p class="text-[11px] text-stone-500">Click any premise to jump to its source turn.</p>
+            </div>
+            <button onclick="recalculateCruxAI()" class="px-2.5 py-1 rounded-lg bg-accentlight text-accent text-xs font-medium hover:bg-accent hover:text-white transition-colors">
+              Recalculate
+            </button>
+          </div>
+
+          <!-- Accordion 1: Fundamental Value Cruxes -->
+          <details open class="group border border-borderwarm rounded-xl bg-paper p-3">
+            <summary class="cursor-pointer text-xs font-semibold text-ink flex items-center justify-between">
+              <span>Fundamental Value Cruxes</span>
+              <span class="text-stone-400 group-open:rotate-180 transition-transform">&#9662;</span>
+            </summary>
+            <div id="crux-values-list" class="mt-2.5 space-y-2 text-xs text-stone-700"></div>
+          </details>
+
+          <!-- Accordion 2: Established Shared Ground -->
+          <details open class="group border border-borderwarm rounded-xl bg-paper p-3">
+            <summary class="cursor-pointer text-xs font-semibold text-ink flex items-center justify-between">
+              <span>Established Shared Ground</span>
+              <span class="text-stone-400 group-open:rotate-180 transition-transform">&#9662;</span>
+            </summary>
+            <div id="crux-shared-list" class="mt-2.5 space-y-2 text-xs text-stone-700"></div>
+          </details>
+
+          <!-- Accordion 3: Extracted Premise Ledger (Premise-to-Turn Jump Links) -->
+          <details open class="group border border-borderwarm rounded-xl bg-paper p-3">
+            <summary class="cursor-pointer text-xs font-semibold text-ink flex items-center justify-between">
+              <span>Extracted Premise Ledger</span>
+              <span class="text-stone-400 group-open:rotate-180 transition-transform">&#9662;</span>
+            </summary>
+            <div id="crux-ledger-list" class="mt-2.5 space-y-2 text-xs"></div>
+          </details>
+        </aside>
+      </div>
+
+      <!-- STEPPED BOTTOM TURN COMPOSER DOCK (Hidden in Witnessing/Archive Mode) -->
+      <div id="stepped-composer-dock" class="bg-white border border-borderwarm rounded-2xl p-4 sm:p-5 shadow-sm space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-borderwarm pb-2.5">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-semibold uppercase tracking-wider text-ink">Turn Composer</span>
+            <span id="composer-posting-as" class="px-2 py-0.5 rounded bg-subtle font-mono text-[11px] text-stone-700">Posting to Proposition A</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <label for="composer-role-tag" class="text-[11px] text-stone-500">Role Tag:</label>
+            <select id="composer-role-tag" class="text-xs bg-paper border border-borderwarm rounded-lg px-2 py-1 text-ink focus:outline-none">
+              <option value="[Core Argument]">[Core Argument]</option>
+              <option value="[Boundary Clarification]">[Boundary Clarification]</option>
+              <option value="[Empirical Counter-Check]">[Empirical Counter-Check]</option>
+              <option value="[Steel-Man Concession]">[Steel-Man Concession]</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- STEP 1: COMPREHENSION GATE (Collapses once verified) -->
+        <div id="gate-step-container" class="p-3.5 rounded-xl bg-amberbg/75 border border-amber-200 space-y-2.5">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <span class="text-xs font-semibold text-ambermuted">Step 1 &bull; Comprehension Gate (Steel-Man Opponent First)</span>
+            <button onclick="quickVerifySteelMan()" class="text-[11px] font-medium text-ambermuted underline hover:text-ink">
+              Accept AI Distillation (+15 Karma)
+            </button>
+          </div>
+          <p id="gate-opponent-summary" class="text-xs text-stone-700 italic"></p>
+          <div class="flex flex-col sm:flex-row gap-2">
+            <input id="gate-steelman-input" type="text" placeholder="Summarize your opponent's strongest point in 1 charitable sentence..." class="flex-1 px-3 py-2 rounded-lg border border-amber-300 bg-white text-xs text-ink focus:outline-none" onkeydown="if(event.key==='Enter') verifyCustomSteelMan()" />
+            <button onclick="verifyCustomSteelMan()" class="px-3.5 py-2 rounded-lg bg-ambermuted text-white text-xs font-medium hover:opacity-90 shrink-0">
+              Verify Steel-Man
+            </button>
+          </div>
+        </div>
+
+        <!-- VERIFIED COLLAPSED BADGE -->
+        <div id="gate-verified-badge" class="hidden px-3.5 py-2 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-between text-xs text-emerald-800">
+          <div class="flex items-center gap-2">
+            <span class="font-bold">&#10003;</span>
+            <span><strong>Step 1 Cleared:</strong> Opponent stance steel-manned charitably.</span>
+          </div>
+          <button onclick="resetSteelManGate()" class="text-[11px] underline text-emerald-700">Re-open Gate</button>
+        </div>
+
+        <!-- STEP 2: DRAFT & PRIVATE PRE-FLIGHT AUDIT -->
+        <div id="draft-step-container" class="space-y-3 opacity-50 pointer-events-none transition-opacity">
+          <textarea id="composer-draft-input" rows="3" placeholder="Write your argument clearly. The AI will privately flag unstated assumptions or broad generalizations before you post..." class="w-full px-3.5 py-2.5 rounded-xl border border-borderwarm bg-paper text-sm text-ink focus:outline-none focus:border-accent"></textarea>
+
+          <!-- Private Pre-Flight Audit Result Box -->
+          <div id="preflight-audit-box" class="hidden p-4 rounded-xl bg-subtle border border-borderwarm space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <span class="text-xs font-semibold text-ink">Private AI Pre-Flight Audit (Visible Only to You)</span>
+              <button onclick="runPreFlightAudit()" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-borderwarm text-[11px] font-medium text-ink hover:bg-paper">
+                <span>&#8635; Refresh AI Assumption Flag</span>
+              </button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+              <div class="p-2.5 rounded-lg bg-white border border-borderwarm">
+                <span class="block text-[10px] font-mono uppercase text-stone-400">Unstated Assumption</span>
+                <p id="audit-assumption-text" class="text-stone-700 mt-1"></p>
+              </div>
+              <div class="p-2.5 rounded-lg bg-white border border-borderwarm">
+                <span class="block text-[10px] font-mono uppercase text-stone-400">Potential Bias / Leap</span>
+                <p id="audit-bias-text" class="text-ambermuted mt-1"></p>
+              </div>
+              <div class="p-2.5 rounded-lg bg-white border border-borderwarm">
+                <span class="block text-[10px] font-mono uppercase text-stone-400">Socratic Boundary Prompt</span>
+                <p id="audit-socratic-text" class="text-accent mt-1"></p>
+              </div>
+            </div>
+            <div id="audit-apply-refinement-row" class="hidden flex flex-wrap items-center justify-between gap-2 bg-accentlight/70 border border-accent/20 rounded-lg px-3 py-2 text-xs">
+              <span class="text-accent font-medium" id="audit-suggested-rewrite"></span>
+              <button onclick="applySuggestedRefinement()" class="px-2.5 py-1 rounded bg-accent text-white text-[11px] font-medium shrink-0">Apply Precision</button>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <button onclick="runPreFlightAudit()" class="px-4 py-2 rounded-xl bg-subtle hover:bg-borderwarm border border-borderwarm text-xs font-semibold text-ink transition-colors">
+              Run AI Pre-Flight Audit (+10 Karma)
+            </button>
+            <div class="flex flex-wrap items-center gap-2">
+              <button onclick="openFactModal()" class="px-3.5 py-2 rounded-xl bg-white hover:bg-subtle border border-borderwarm text-xs font-medium text-stone-700 transition-colors">
+                Fact &amp; Data Lookup
+              </button>
+              <button onclick="publishTurn()" class="px-5 py-2 rounded-xl bg-accent hover:bg-accent/90 text-white text-xs font-semibold transition-colors">
+                Publish to Debate Pane
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- VIEW 3: START / PAIR WORKSPACE (Side A Init + Connect to Partner)     -->
+    <!-- ===================================================================== -->
+    <section id="view-start" class="hidden space-y-6 animate-view-in">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Side A Initialization -->
+        <div class="lg:col-span-7 bg-white border border-borderwarm rounded-2xl p-6 shadow-xs flex flex-col justify-between space-y-5">
+          <div class="space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-borderwarm pb-3">
+              <div>
+                <h2 class="font-editorial text-xl font-medium text-ink">Side A Initialization</h2>
+                <p class="text-xs text-stone-500">State your opening thesis and configure room parameters.</p>
+              </div>
+              <div class="flex flex-wrap items-center gap-1.5">
+                <span class="text-[11px] text-stone-500">Load Preset:</span>
+                <button type="button" onclick="applyPreset('animals')" class="px-2 py-1 text-[11px] rounded bg-subtle hover:bg-borderwarm text-stone-700 font-medium">Animal Ethics</button>
+                <button type="button" onclick="applyPreset('reservation')" class="px-2 py-1 text-[11px] rounded bg-subtle hover:bg-borderwarm text-stone-700 font-medium">Reservation Policy</button>
+                <button type="button" onclick="applyPreset('nepotism')" class="px-2 py-1 text-[11px] rounded bg-subtle hover:bg-borderwarm text-stone-700 font-medium">Nepotism</button>
+              </div>
+            </div>
+
+            <div>
+              <label for="init-topic" class="block text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1.5">Debate Question / Topic</label>
+              <input id="init-topic" type="text" value="Is killing animals for food morally permissible when alternatives exist?" class="w-full px-3.5 py-2.5 rounded-xl border border-borderwarm bg-paper text-sm text-ink focus:outline-none focus:border-accent" />
+            </div>
+
+            <div>
+              <label for="init-stance-a" class="block text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1.5">Your Opening Stance (Side A)</label>
+              <textarea id="init-stance-a" rows="3" class="w-full px-3.5 py-2.5 rounded-xl border border-borderwarm bg-paper text-sm text-ink focus:outline-none focus:border-accent leading-relaxed">Killing animals is wrong, unless and until there are no alternatives due to physical, geographical, immediate situational, or medical constraints.</textarea>
+            </div>
+
+            <!-- Visibility & Pace Toggles -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+              <div class="p-3 rounded-xl bg-paper border border-borderwarm">
+                <span class="block text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-2">Visibility</span>
+                <div class="grid grid-cols-2 gap-1.5">
+                  <button type="button" id="btn-vis-public" onclick="setRoomOption('visibility', 'public')" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-ink text-white">Public</button>
+                  <button type="button" id="btn-vis-private" onclick="setRoomOption('visibility', 'private')" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-white border border-borderwarm text-stone-600">Private</button>
+                </div>
+              </div>
+              <div class="p-3 rounded-xl bg-paper border border-borderwarm">
+                <span class="block text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-2">Debate Pace</span>
+                <div class="grid grid-cols-2 gap-1.5">
+                  <button type="button" id="btn-pace-live" onclick="setRoomOption('pace', 'live')" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-ink text-white">Live Sync</button>
+                  <button type="button" id="btn-pace-async" onclick="setRoomOption('pace', 'async')" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-white border border-borderwarm text-stone-600">Slow Async</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-2 flex flex-wrap items-center justify-between gap-3 border-t border-borderwarm">
+            <div class="flex items-center gap-3">
+              <div class="px-3 py-1.5 rounded-lg bg-subtle border border-borderwarm font-mono text-sm font-semibold text-ink" id="home-generated-code">CRX-842</div>
+              <button type="button" onclick="regenerateCode()" class="text-xs text-stone-500 hover:text-ink underline">Generate New Code</button>
+            </div>
+            <button type="button" onclick="launchFromSideA()" class="px-5 py-2.5 rounded-xl bg-accent hover:bg-accent/90 text-white text-sm font-semibold transition-colors shadow-xs">
+              Distill &amp; Launch Debate Arena &rarr;
+            </button>
+          </div>
+        </div>
+
+        <!-- Connect to Partner -->
+        <div class="lg:col-span-5 bg-white border border-borderwarm rounded-2xl p-6 shadow-xs flex flex-col justify-between space-y-5">
+          <div class="space-y-4">
+            <div class="border-b border-borderwarm pb-3">
+              <h2 class="font-editorial text-xl font-medium text-ink">Connect to Partner</h2>
+              <p class="text-xs text-stone-500">Enter a partner code or scan QR on mobile to pair into Side B.</p>
+            </div>
+
+            <!-- QR & Code Display -->
+            <div class="flex items-center gap-4 p-3.5 rounded-xl bg-paper border border-borderwarm">
+              <div id="qr-svg-container" class="w-20 h-20 bg-white p-1.5 rounded-lg border border-borderwarm shrink-0 flex items-center justify-center"></div>
+              <div class="space-y-1">
+                <div class="text-xs font-semibold text-ink">Share Room Invite</div>
+                <p class="text-xs text-stone-500 leading-relaxed">Open a second browser window or phone and enter code <span class="font-mono font-semibold text-ink" id="share-code-inline">CRX-842</span>.</p>
+                <button type="button" onclick="copyRoomInvite()" id="btn-copy-invite" class="text-xs font-medium text-accent hover:underline">Copy Invite Link</button>
+              </div>
+            </div>
+
+            <!-- Join by Partner Code -->
+            <div class="space-y-2 pt-1">
+              <label for="partner-code-input" class="block text-xs font-semibold uppercase tracking-wider text-stone-500">Enter Partner Code</label>
+              <div class="flex gap-2">
+                <input id="partner-code-input" type="text" placeholder="e.g. CRX-842" maxlength="7" class="flex-1 px-3.5 py-2.5 rounded-xl border border-borderwarm bg-paper font-mono text-sm uppercase text-ink focus:outline-none focus:border-accent" />
+                <button type="button" onclick="joinWithPartnerCode()" class="px-4 py-2.5 rounded-xl bg-ink hover:bg-stone-800 text-white text-sm font-medium transition-colors">
+                  Join Room
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label for="init-stance-b" class="block text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1.5">Partner Opening Stance (Side B)</label>
+              <textarea id="init-stance-b" rows="2" class="w-full px-3.5 py-2 rounded-xl border border-borderwarm bg-paper text-sm text-ink focus:outline-none focus:border-accent">It is morally acceptable to kill animals for food simply because humans enjoy the taste and culinary tradition.</textarea>
+            </div>
+          </div>
+
+          <div class="pt-2 border-t border-borderwarm flex items-center justify-between">
+            <button type="button" onclick="simulateMobileQRScan()" class="inline-flex items-center gap-1.5 text-xs font-medium text-stone-600 hover:text-ink">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 7V5a2 2 0 012-2h2m10 0h2a2 2 0 012 2v2m0 10v2a2 2 0 01-2 2h-2M7 21H5a2 2 0 01-2-2v-2M7 12h10" />
+              </svg>
+              <span>Scan Mobile QR</span>
+            </button>
+            <span class="text-[11px] text-stone-400">Guest-first &bull; No forced signup</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- VIEW 4: CENTRAL AI DISTILLATION & MUTUAL STANCE AGREEMENT STAGE       -->
+    <!-- ===================================================================== -->
+    <section id="view-distill" class="hidden max-w-4xl mx-auto space-y-6 animate-view-in">
+      <div class="bg-white border border-borderwarm rounded-2xl p-6 sm:p-8 shadow-xs space-y-6">
+        <div class="flex items-center justify-between border-b border-borderwarm pb-4">
+          <div>
+            <span class="text-[11px] font-mono uppercase tracking-wider text-accent font-semibold">Stage 1 &bull; AI Epistemic Distillation</span>
+            <h2 class="font-editorial text-2xl font-medium text-ink mt-1" id="distill-topic-title">Debate Topic</h2>
+          </div>
+          <span class="px-3 py-1 rounded-full bg-subtle border border-borderwarm font-mono text-xs text-stone-700" id="distill-room-badge">CRX-842</span>
+        </div>
+
+        <!-- Central Point of Disagreement Synthesis -->
+        <div class="p-5 rounded-xl bg-accentlight/65 border border-accent/25 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold uppercase tracking-wider text-accent">Central Point of Disagreement</span>
+            <button onclick="refreshCentralDistillation()" class="text-xs font-medium text-accent hover:underline">Refresh Distillation</button>
+          </div>
+          <p id="distill-central-summary" class="font-editorial text-lg text-ink leading-relaxed"></p>
+        </div>
+
+        <!-- Side A vs Side B Initial v1.0 Agreement Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="p-4 rounded-xl bg-paper border border-borderwarm space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-ink">Proposition A (v1.0)</span>
+              <span class="text-[11px] font-mono text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Initial Lock</span>
+            </div>
+            <p id="distill-stance-a" class="text-sm text-stone-700 leading-relaxed"></p>
+            <div class="pt-2 border-t border-borderwarm">
+              <span class="block text-[11px] font-semibold text-stone-500">Extracted Core Premise:</span>
+              <p id="distill-premise-a" class="text-xs text-stone-600 mt-0.5"></p>
+            </div>
+          </div>
+
+          <div class="p-4 rounded-xl bg-paper border border-borderwarm space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-ink">Counter-Position B (v1.0)</span>
+              <span class="text-[11px] font-mono text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Initial Lock</span>
+            </div>
+            <p id="distill-stance-b" class="text-sm text-stone-700 leading-relaxed"></p>
+            <div class="pt-2 border-t border-borderwarm">
+              <span class="block text-[11px] font-semibold text-stone-500">Extracted Core Premise:</span>
+              <p id="distill-premise-b" class="text-xs text-stone-600 mt-0.5"></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-borderwarm">
+          <button onclick="navigate('start')" class="text-xs font-medium text-stone-500 hover:text-ink">&larr; Edit Stances</button>
+          <button onclick="confirmInitialStances()" class="px-5 py-2.5 rounded-xl bg-ink hover:bg-stone-800 text-white text-sm font-medium transition-colors">
+            Both Parties Agree &amp; Enter Debate Arena &rarr;
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===================================================================== -->
+  <!-- PERSISTENT BOTTOM EPISTEMIC REFERENCE BOARD (Solidified across pages) -->
+  <!-- ===================================================================== -->
+  <footer class="border-t border-borderwarm bg-white mt-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-4">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h3 class="font-editorial text-base font-medium text-ink">Principles of Epistemic Debate &amp; Behavior</h3>
+          <p class="text-xs text-stone-500">Foundational standards governing every room on Crux.</p>
+        </div>
+        <button onclick="openDrawer('knowledge')" class="text-xs font-medium text-accent hover:underline">
+          Open Knowledge Base &rarr;
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2.5 text-xs">
+        <div class="p-3 rounded-xl bg-paper border border-borderwarm">
+          <div class="font-semibold text-ink">1. Principle of Charity</div>
+          <p class="text-[11px] text-stone-600 mt-1 leading-relaxed">Interpret your partner's statement in its strongest, most rational form before critiquing.</p>
+        </div>
+        <div class="p-3 rounded-xl bg-paper border border-borderwarm">
+          <div class="font-semibold text-ink">2. Rapoport's Rules</div>
+          <p class="text-[11px] text-stone-600 mt-1 leading-relaxed">Re-express your partner's position clearly enough that they confirm it before offering rebuttal.</p>
+        </div>
+        <div class="p-3 rounded-xl bg-paper border border-borderwarm">
+          <div class="font-semibold text-ink">3. Hitchens's Razor</div>
+          <p class="text-[11px] text-stone-600 mt-1 leading-relaxed">What can be asserted without evidence can also be dismissed without evidence.</p>
+        </div>
+        <div class="p-3 rounded-xl bg-paper border border-borderwarm">
+          <div class="font-semibold text-ink">4. Hanlon's Razor</div>
+          <p class="text-[11px] text-stone-600 mt-1 leading-relaxed">Never attribute to malice what can be adequately explained by differing premises or oversight.</p>
+        </div>
+        <div class="p-3 rounded-xl bg-paper border border-borderwarm">
+          <div class="font-semibold text-ink">5. Falsifiability</div>
+          <p class="text-[11px] text-stone-600 mt-1 leading-relaxed">State what evidence or boundary condition would cause you to revise your stance.</p>
+        </div>
+        <div class="p-3 rounded-xl bg-paper border border-borderwarm">
+          <div class="font-semibold text-ink">6. Is vs. Ought Guillotine</div>
+          <p class="text-[11px] text-stone-600 mt-1 leading-relaxed">Separate empirical facts ("what is") from moral value judgments ("what ought to be").</p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ===================================================================== -->
+  <!-- CORNER CONTROL HUB DRAWER (Profile, Knowledge Base, How It Works, About) -->
+  <!-- ===================================================================== -->
+  <div id="control-drawer-backdrop" onclick="closeDrawer()" class="fixed inset-0 bg-ink/30 backdrop-blur-xs z-50 hidden"></div>
+  <aside id="control-drawer" class="fixed top-0 right-0 h-full w-full max-w-xl bg-paper border-l border-borderwarm z-50 hidden flex-col shadow-2xl">
+    <div class="px-6 py-4 bg-white border-b border-borderwarm flex items-center justify-between">
+      <span class="font-editorial text-xl font-medium text-ink">Crux Control Hub</span>
+      <button onclick="closeDrawer()" class="w-8 h-8 rounded-lg border border-borderwarm flex items-center justify-center text-stone-600 hover:text-ink">&times;</button>
+    </div>
+
+    <div class="px-6 pt-3 bg-white border-b border-borderwarm flex gap-4 overflow-x-auto text-xs font-medium">
+      <button onclick="switchDrawerTab('profile')" id="dtab-profile" class="pb-2.5 border-b-2 border-ink text-ink whitespace-nowrap">Profile &amp; Account</button>
+      <button onclick="switchDrawerTab('knowledge')" id="dtab-knowledge" class="pb-2.5 border-b-2 border-transparent text-stone-500 hover:text-ink whitespace-nowrap">Knowledge Base</button>
+      <button onclick="switchDrawerTab('how')" id="dtab-how" class="pb-2.5 border-b-2 border-transparent text-stone-500 hover:text-ink whitespace-nowrap">How It Works</button>
+      <button onclick="switchDrawerTab('about')" id="dtab-about" class="pb-2.5 border-b-2 border-transparent text-stone-500 hover:text-ink whitespace-nowrap">About &amp; Credits</button>
+    </div>
+
+    <div class="flex-1 overflow-y-auto p-6 space-y-6 custom-scroll">
+
+      <!-- TAB 1: PROFILE & ACCOUNT -->
+      <div id="dpanel-profile" class="space-y-5">
+        <div class="bg-white border border-borderwarm rounded-2xl p-4 space-y-3">
+          <div class="flex items-center justify-between gap-2">
+            <div>
+              <div class="text-sm font-semibold text-ink" id="profile-display-name">Dr. Varun Agarwal (Guest Session)</div>
+              <div class="text-xs text-stone-500">Sign in to sync saved debate history &amp; stance evolution across devices.</div>
+            </div>
+            <button onclick="toggleSignInState()" id="btn-auth-toggle" class="px-3 py-1.5 rounded-lg bg-ink text-white text-xs font-medium shrink-0">
+              Sign In
+            </button>
+          </div>
+          <div class="grid grid-cols-3 gap-2 pt-2 border-t border-borderwarm text-center">
+            <div class="p-2 rounded-xl bg-paper">
+              <div class="font-mono text-base font-semibold text-accent" id="profile-karma-total">145</div>
+              <div class="text-[11px] text-stone-500">Epistemic Karma</div>
+            </div>
+            <div class="p-2 rounded-xl bg-paper">
+              <div class="font-mono text-base font-semibold text-ink" id="profile-deltas-total">4</div>
+              <div class="text-[11px] text-stone-500">&Delta; Pins Awarded</div>
+            </div>
+            <div class="p-2 rounded-xl bg-paper">
+              <div class="font-mono text-base font-semibold text-ambermuted" id="profile-credits-total">48</div>
+              <div class="text-[11px] text-stone-500">AI Referee Credits</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Local Visual Theme Selector -->
+        <div class="bg-white border border-borderwarm rounded-2xl p-4 space-y-3">
+          <div class="flex items-center justify-between">
+            <h4 class="text-xs font-semibold uppercase tracking-wider text-ink">Local Visual Theme</h4>
+            <span class="text-[11px] text-stone-500">Saved in Browser</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <button type="button" id="theme-btn-editorial" onclick="setVisualTheme('editorial')" class="p-3 rounded-xl border-2 border-ink bg-[#FAF9F6] text-left space-y-1 transition-all">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-[#18181B]">Warm Editorial Paper</span>
+                <span class="flex gap-1">
+                  <span class="w-3 h-3 rounded-full bg-[#FAF9F6] border border-stone-400"></span>
+                  <span class="w-3 h-3 rounded-full bg-[#2B5B4E]"></span>
+                  <span class="w-3 h-3 rounded-full bg-[#D97706]"></span>
+                </span>
+              </div>
+              <p class="text-[11px] text-stone-500">Default paper, forest green &amp; ink palette</p>
+            </button>
+
+            <button type="button" id="theme-btn-cerulean" onclick="setVisualTheme('cerulean')" class="p-3 rounded-xl border border-borderwarm bg-[#F4FAFD] text-left space-y-1 transition-all">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-[#0D4C73]">Cerulean Wave Canvas</span>
+                <span class="flex gap-1">
+                  <span class="w-3 h-3 rounded-full bg-[#0A74B8]"></span>
+                  <span class="w-3 h-3 rounded-full bg-[#10375C]"></span>
+                  <span class="w-3 h-3 rounded-full bg-[#5BC0EB]"></span>
+                </span>
+              </div>
+              <p class="text-[11px] text-stone-500">Blue wave outer frame &amp; floating white card</p>
+            </button>
+          </div>
+        </div>
+
+        <!-- Epistemic Karma Breakdown -->
+        <div class="bg-white border border-borderwarm rounded-2xl p-4 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <h4 class="text-xs font-semibold uppercase tracking-wider text-ink">Epistemic Karma Ledger (Calibrating)</h4>
+            <span class="text-[11px] text-stone-500">Measures rigor, never "winning"</span>
+          </div>
+          <p class="text-xs text-stone-600 leading-relaxed">
+            Hidden from the main header while scoring weights are calibrated. Karma tracks good-faith epistemic habits—steel-manning opponents, refining broad generalizations, and conceding blind spots.
+          </p>
+          <div class="space-y-1.5 pt-1 text-xs">
+            <div class="flex justify-between py-1 border-b border-borderwarm/60">
+              <span class="text-stone-600">Opponent Steel-Man Verifications</span>
+              <span class="font-mono text-accent">+15 pts / check</span>
+            </div>
+            <div class="flex justify-between py-1 border-b border-borderwarm/60">
+              <span class="text-stone-600">Thesis Boundary Refinements (v1.0 &rarr; v1.1)</span>
+              <span class="font-mono text-accent">+20 pts / revision</span>
+            </div>
+            <div class="flex justify-between py-1 border-b border-borderwarm/60">
+              <span class="text-stone-600">Pre-Flight AI Assumption Audits</span>
+              <span class="font-mono text-accent">+10 pts / audit</span>
+            </div>
+            <div class="flex justify-between py-1">
+              <span class="text-stone-600">Awarding &Delta; Clarification Pins</span>
+              <span class="font-mono text-accent">+25 pts / pin</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Backend & AI Referee Deployment Config -->
+        <div class="bg-white border border-borderwarm rounded-2xl p-4 space-y-3">
+          <h4 class="text-xs font-semibold uppercase tracking-wider text-ink">Backend &amp; AI Referee Config</h4>
+          <p class="text-xs text-stone-500 leading-relaxed">
+            Configured for hosted <code class="font-mono text-ink">/api/referee</code> proxy and live two-tab <code class="font-mono text-ink">BroadcastChannel</code> sync. Add optional keys below for direct LLM testing or Supabase deployment.
+          </p>
+          <div class="space-y-2.5">
+            <div>
+              <label for="cfg-gemini-key" class="block text-[11px] font-medium text-stone-600 mb-1">Optional Local Dev Gemini API Key</label>
+              <input id="cfg-gemini-key" type="password" placeholder="AIzaSy..." class="w-full px-3 py-1.5 rounded-lg border border-borderwarm bg-paper font-mono text-xs" />
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div>
+                <label for="cfg-supabase-url" class="block text-[11px] font-medium text-stone-600 mb-1">Supabase Project URL</label>
+                <input id="cfg-supabase-url" type="text" placeholder="https://xyz.supabase.co" class="w-full px-3 py-1.5 rounded-lg border border-borderwarm bg-paper font-mono text-xs" />
+              </div>
+              <div>
+                <label for="cfg-supabase-key" class="block text-[11px] font-medium text-stone-600 mb-1">Supabase Anon Key</label>
+                <input id="cfg-supabase-key" type="password" placeholder="eyJhbGci..." class="w-full px-3 py-1.5 rounded-lg border border-borderwarm bg-paper font-mono text-xs" />
+              </div>
+            </div>
+            <button onclick="saveBackendConfig()" class="px-3.5 py-1.5 rounded-lg bg-accent text-white text-xs font-medium">
+              Save Local Config
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: KNOWLEDGE BASE -->
+      <div id="dpanel-knowledge" class="hidden space-y-4">
+        <div class="space-y-1">
+          <h3 class="font-editorial text-xl font-medium text-ink">Epistemic Knowledge Base</h3>
+          <p class="text-xs text-stone-600">Core primers on morality, ethics, rights, and reasoning structures.</p>
+        </div>
+        <div class="space-y-3" id="knowledge-base-cards"></div>
+      </div>
+
+      <!-- TAB 3: HOW IT WORKS -->
+      <div id="dpanel-how" class="hidden space-y-4">
+        <h3 class="font-editorial text-xl font-medium text-ink">How Crux Works</h3>
+        <div class="space-y-3 text-xs text-stone-700 leading-relaxed">
+          <div class="p-4 rounded-xl bg-white border border-borderwarm space-y-1">
+            <div class="font-semibold text-ink">1. Private Pre-Flight Audit (Before Posting)</div>
+            <p>Before your argument reaches your partner, the AI privately surfaces unstated assumptions, broad generalizations, and potential cognitive biases—giving you the chance to refine your boundary conditions first.</p>
+          </div>
+          <div class="p-4 rounded-xl bg-white border border-borderwarm space-y-1">
+            <div class="font-semibold text-ink">2. Mandatory Comprehension Gate</div>
+            <p>You cannot reply to an argument until you accept the AI's distillation of your partner's claim or write a 1-sentence steel-man verified as accurate.</p>
+          </div>
+          <div class="p-4 rounded-xl bg-white border border-borderwarm space-y-1">
+            <div class="font-semibold text-ink">3. Socratic Referee &amp; Fact Checker, Never Ghostwriter</div>
+            <p>Crux never writes arguments for you and never declares a winner on moral questions. It separates empirical facts from value conflicts and maps the exact root crux.</p>
+          </div>
+          <div class="p-4 rounded-xl bg-white border border-borderwarm space-y-1">
+            <div class="font-semibold text-ink">4. Anti-Tribal Co-Reasoning &amp; Stance Versioning</div>
+            <p>Instead of upvotes or dunking, theses evolve visibly (v1.0 &rarr; v1.1) when a partner exposes a blind spot, earning &Delta; clarification pins.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 4: ABOUT & CREDITS -->
+      <div id="dpanel-about" class="hidden space-y-4">
+        <h3 class="font-editorial text-xl font-medium text-ink">About &amp; Credits</h3>
+        <div class="bg-white border border-borderwarm rounded-2xl p-5 space-y-4 text-xs text-stone-700 leading-relaxed">
+          <p>
+            <strong>Crux</strong> was designed to replace reactive comment-thread tribalism with structured, good-faith human dialogue augmented by neutral epistemic AI.
+          </p>
+          <div class="border-t border-borderwarm pt-3 space-y-2.5">
+            <div>
+              <span class="block text-[10px] font-mono uppercase tracking-wider text-stone-400">Concept, Direction &amp; Product Architecture</span>
+              <span class="text-sm font-semibold text-ink">Dr. Varun Agarwal</span>
+            </div>
+            <div>
+              <span class="block text-[10px] font-mono uppercase tracking-wider text-stone-400">AI System Design, Coding &amp; Epistemic Augmentation</span>
+              <span class="text-sm font-semibold text-ink">Gemini</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </aside>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 1: REFINE STANCE & WORD-LEVEL DIFF                              -->
+  <!-- ===================================================================== -->
+  <div id="refine-modal" class="fixed inset-0 bg-ink/40 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+    <div class="bg-white border border-borderwarm rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-xl">
+      <div class="flex items-center justify-between border-b border-borderwarm pb-3">
+        <h3 class="font-editorial text-xl font-medium text-ink">Refine Stance Boundaries</h3>
+        <button onclick="closeRefineModal()" class="text-stone-400 hover:text-ink text-lg">&times;</button>
+      </div>
+      <p class="text-xs text-stone-600">
+        Updating your thesis increments its version number, logs a word-level diff, and awards <strong>+20 Epistemic Karma</strong>.
+      </p>
+      <div>
+        <label for="refine-stance-textarea" class="block text-[11px] font-semibold uppercase text-stone-500 mb-1">Updated Thesis Statement</label>
+        <textarea id="refine-stance-textarea" rows="3" class="w-full px-3.5 py-2.5 rounded-xl border border-borderwarm bg-paper text-sm text-ink focus:outline-none focus:border-accent"></textarea>
+      </div>
+      <label class="flex items-center gap-2 text-xs text-stone-700 cursor-pointer">
+        <input id="refine-award-delta" type="checkbox" checked class="rounded border-borderwarm text-accent" />
+        <span>Award a <strong>&Delta; Clarification Pin</strong> to partner for prompting this refinement (+25 Karma)</span>
+      </label>
+      <div class="flex justify-end gap-2 pt-2 border-t border-borderwarm">
+        <button onclick="closeRefineModal()" class="px-4 py-2 rounded-xl border border-borderwarm text-xs font-medium text-stone-600">Cancel</button>
+        <button onclick="submitStanceRefinement()" class="px-4 py-2 rounded-xl bg-accent text-white text-xs font-medium">Save New Version</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 2: SHAREABLE EPISTEMIC ARTIFACT EXPORT (PNG, SVG, MARKDOWN)     -->
+  <!-- ===================================================================== -->
+  <div id="export-modal" class="fixed inset-0 bg-ink/40 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+    <div class="bg-white border border-borderwarm rounded-2xl max-w-2xl w-full p-6 space-y-4 shadow-xl max-h-[90vh] overflow-y-auto custom-scroll">
+      <div class="flex items-center justify-between border-b border-borderwarm pb-3">
+        <div>
+          <h3 class="font-editorial text-xl font-medium text-ink">Export Epistemic Summary Artifact</h3>
+          <p class="text-xs text-stone-500">Shareable summary card and structured Markdown record.</p>
+        </div>
+        <button onclick="closeExportModal()" class="text-stone-400 hover:text-ink text-lg">&times;</button>
+      </div>
+
+      <div id="artifact-svg-preview" class="rounded-xl border border-borderwarm overflow-hidden bg-paper"></div>
+
+      <div class="flex flex-wrap items-center justify-between gap-2 pt-2">
+        <div class="flex flex-wrap gap-2">
+          <button onclick="downloadArtifactPNG()" class="px-4 py-2 rounded-xl bg-ink text-white text-xs font-medium hover:bg-stone-800">Download PNG Card</button>
+          <button onclick="downloadArtifactSVG()" class="px-4 py-2 rounded-xl bg-subtle border border-borderwarm text-ink text-xs font-medium hover:bg-borderwarm">Download SVG</button>
+          <button onclick="copyArtifactMarkdown()" id="btn-copy-md" class="px-4 py-2 rounded-xl bg-accentlight text-accent border border-accent/25 text-xs font-medium hover:bg-accent hover:text-white">Copy Markdown</button>
+        </div>
+        <button onclick="closeExportModal()" class="text-xs text-stone-500 hover:text-ink">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 3: IN-APP EPISTEMIC FACT & EMPIRICAL DATA LOOKUP TOOL           -->
+  <!-- ===================================================================== -->
+  <div id="fact-modal" class="fixed inset-0 bg-ink/40 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+    <div class="bg-white border border-borderwarm rounded-2xl max-w-2xl w-full p-6 space-y-4 shadow-xl max-h-[90vh] overflow-y-auto custom-scroll animate-view-in">
+      <div class="flex items-center justify-between border-b border-borderwarm pb-3">
+        <div>
+          <span class="text-[10px] font-mono uppercase tracking-wider text-accent font-semibold">Epistemic Verification Layer</span>
+          <h3 class="font-editorial text-xl font-medium text-ink">Fact &amp; Empirical Data Lookup</h3>
+        </div>
+        <button onclick="closeFactModal()" class="text-stone-400 hover:text-ink text-lg">&times;</button>
+      </div>
+
+      <p class="text-xs text-stone-600 leading-relaxed">
+        Query any factual statistic or empirical claim in the debate. Crux separates testable empirical data from moral value judgments and summarizes scientific/institutional consensus.
+      </p>
+
+      <div class="flex flex-wrap items-center gap-1.5 text-[11px]">
+        <span class="text-stone-500">Quick briefs:</span>
+        <button type="button" onclick="runFactQuery('Global greenhouse gas emissions and land use from animal agriculture')" class="px-2.5 py-1 rounded-md bg-subtle hover:bg-borderwarm text-stone-700 font-medium">Livestock Emissions &amp; Land</button>
+        <button type="button" onclick="runFactQuery('Long-term graduation and mobility outcomes of affirmative reservation policies')" class="px-2.5 py-1 rounded-md bg-subtle hover:bg-borderwarm text-stone-700 font-medium">Reservation Mobility Data</button>
+        <button type="button" onclick="runFactQuery('Empirical impact of family nepotism on firm performance and governance')" class="px-2.5 py-1 rounded-md bg-subtle hover:bg-borderwarm text-stone-700 font-medium">Nepotism &amp; Firm Performance</button>
+      </div>
+
+      <div class="flex gap-2">
+        <input id="fact-query-input" type="text" placeholder="Enter an empirical claim or statistic to verify..." class="flex-1 px-3.5 py-2.5 rounded-xl border border-borderwarm bg-paper text-sm text-ink focus:outline-none focus:border-accent" onkeydown="if(event.key==='Enter') runFactQuery()" />
+        <button onclick="runFactQuery()" class="px-4 py-2.5 rounded-xl bg-ink hover:bg-stone-800 text-white text-xs font-semibold shrink-0">
+          Verify Data
+        </button>
+      </div>
+
+      <div id="fact-result-container" class="hidden p-4 rounded-xl bg-paper border border-borderwarm space-y-3 text-xs">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-borderwarm pb-2">
+          <span id="fact-claim-type-badge" class="px-2.5 py-0.5 rounded-full bg-accentlight text-accent font-mono text-[11px] font-semibold">Empirical / Testable</span>
+          <span id="fact-consensus-badge" class="px-2.5 py-0.5 rounded-full bg-white border border-borderwarm font-mono text-[11px] text-stone-700">High Consensus</span>
+        </div>
+
+        <div>
+          <span class="block text-[10px] font-mono uppercase text-stone-400">Summary of Empirical Findings</span>
+          <p id="fact-summary-text" class="text-sm text-ink mt-1 leading-relaxed"></p>
+        </div>
+
+        <ul id="fact-bullets-list" class="space-y-1.5 text-stone-700 list-disc pl-4"></ul>
+
+        <div class="p-2.5 rounded-lg bg-amberbg/70 border border-amber-200 text-ambermuted">
+          <strong>Epistemic Boundary Note:</strong> <span id="fact-normative-note"></span>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-borderwarm">
+          <button onclick="citeFactToCruxMap()" id="btn-cite-crux" class="px-3.5 py-1.5 rounded-lg bg-accent text-white text-xs font-medium hover:bg-accent/90">
+            + Pin to Shared Ground (Crux Map)
+          </button>
+          <button onclick="insertFactIntoComposer()" class="px-3.5 py-1.5 rounded-lg bg-white border border-borderwarm text-ink text-xs font-medium hover:bg-subtle">
+            Insert Citation into Draft
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // 1. HERO ILLUSTRATION CONCEPT & STAGE CONTROLLER + LOCAL VISUAL THEME
+    // =========================================================================
+    let currentHeroConcept = 'A';
+
+    const HERO_STAGES_BY_CONCEPT = {
+      A: [
+        {
+          title: "1. Bring Your Raw Premises (Amber Triangle vs. Teal Circle)",
+          sub: "Concept A • Left & Right Hotspots",
+          desc: "Two people enter with contrasting mental models—Proposition A (the warm amber triangle) and Counter-Position B (the forest-teal circle)—often wrapped in tangled assumptions."
+        },
+        {
+          title: "2. Pass Through the AI Socratic Lens",
+          sub: "Concept A • Center Prism Hotspot",
+          desc: "Instead of colliding in a hostile comment thread, both arguments pass through the central Socratic Lens, which privately flags cognitive leaps and requires a charitable steel-man."
+        },
+        {
+          title: "3. Emerge as an Interlocking Epistemic Blueprint",
+          sub: "Concept A • Top Blueprint Hotspot",
+          desc: "Above the lens, the tangled lines resolve into a crisp architectural blueprint showing where the two shapes interlock (Shared Ground) and where their exact root crux lies."
+        }
+      ],
+      B: [
+        {
+          title: "1. Place Contrasting Counter-Weights onto the Scale",
+          sub: "Concept B • Left & Right Puzzle Blocks",
+          desc: "Both participants step forward collaboratively to place their thesis blocks (v1.0) onto a shared epistemic scale rather than attacking each other."
+        },
+        {
+          title: "2. Test Boundaries on the Socratic Fulcrum",
+          sub: "Concept B • Center Fulcrum Hotspot",
+          desc: "The central Socratic fulcrum separates empirical facts from normative value weights so both participants can see what tips the argument."
+        },
+        {
+          title: "3. Lock Together the Shared Keystone Arch",
+          sub: "Concept B • Top Interlocking Arch Hotspot",
+          desc: "As each side refines their boundaries (v1.0 → v1.1) and awards Δ pins, the amber and teal halves lock together into a balanced keystone arch."
+        }
+      ]
+    };
+
+    function switchHeroConcept(concept) {
+      currentHeroConcept = concept === 'B' ? 'B' : 'A';
+      const wrapA = document.getElementById('hero-concept-a-wrap');
+      const wrapB = document.getElementById('hero-concept-b-wrap');
+      const btnA = document.getElementById('btn-concept-a');
+      const btnB = document.getElementById('btn-concept-b');
+      const tag = document.getElementById('hero-concept-tag');
+
+      if (currentHeroConcept === 'A') {
+        wrapA.classList.remove('hidden');
+        wrapB.classList.add('hidden');
+        btnA.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-ink text-white shadow-xs transition-all';
+        btnB.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold text-stone-600 hover:text-ink transition-all';
+        if (tag) tag.textContent = 'Concept A • Tangled Knot to Blueprint';
+      } else {
+        wrapB.classList.remove('hidden');
+        wrapA.classList.add('hidden');
+        btnB.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-ink text-white shadow-xs transition-all';
+        btnA.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold text-stone-600 hover:text-ink transition-all';
+        if (tag) tag.textContent = 'Concept B • Shared Architectural Scale';
+      }
+      setHeroStage(0);
+    }
+
+    function setHeroStage(idx) {
+      const stages = HERO_STAGES_BY_CONCEPT[currentHeroConcept] || HERO_STAGES_BY_CONCEPT.A;
+      const stage = stages[idx] || stages[0];
+      document.getElementById('hero-svg-caption-title').textContent = stage.title;
+      document.getElementById('hero-svg-caption-sub').textContent = stage.sub;
+      document.getElementById('hero-stage-description').textContent = stage.desc;
+      [0, 1, 2].forEach(i => {
+        const btn = document.getElementById('hero-pill-' + i);
+        if (btn) {
+          btn.className = i === idx
+            ? 'px-3.5 py-1.5 rounded-full text-xs font-semibold bg-ink text-white shadow-xs transition-all'
+            : 'px-3.5 py-1.5 rounded-full text-xs font-semibold bg-subtle hover:bg-borderwarm text-stone-700 transition-all';
+        }
+      });
+    }
+
+    function setVisualTheme(themeName, silent) {
+      const t = themeName === 'cerulean' ? 'cerulean' : 'editorial';
+      document.documentElement.setAttribute('data-theme', t);
+      try {
+        localStorage.setItem('crux_visual_theme', t);
+      } catch (e) {}
+
+      const btnEd = document.getElementById('theme-btn-editorial');
+      const btnCe = document.getElementById('theme-btn-cerulean');
+      if (btnEd && btnCe) {
+        btnEd.className = t === 'editorial'
+          ? 'p-3 rounded-xl border-2 border-ink bg-[#FAF9F6] text-left space-y-1 transition-all shadow-xs'
+          : 'p-3 rounded-xl border border-borderwarm bg-[#FAF9F6] text-left space-y-1 transition-all opacity-75 hover:opacity-100';
+        btnCe.className = t === 'cerulean'
+          ? 'p-3 rounded-xl border-2 border-ink bg-[#F4FAFD] text-left space-y-1 transition-all shadow-xs'
+          : 'p-3 rounded-xl border border-borderwarm bg-[#F4FAFD] text-left space-y-1 transition-all opacity-75 hover:opacity-100';
+      }
+      if (!silent) {
+        showToast(t === 'editorial' ? "Switched to Warm Editorial Paper theme" : "Switched to Cerulean Wave Canvas theme");
+      }
+    }
+
+    // =========================================================================
+    // 2. ISOLATED PER-ROOM STATE DICTIONARY (Fixes Room Cross-Contamination Bug)
+    // =========================================================================
+    const CHANNEL_NAME = 'crux_realtime_sync_v2';
+    const syncChannel = ('BroadcastChannel' in window) ? new BroadcastChannel(CHANNEL_NAME) : null;
+
+    const PRESETS = {
+      animals: {
+        id: "CRX-842",
+        shortLabel: "Animal Ethics",
+        pace: "live",
+        statusLabel: "Open Seat (Side B)",
+        topic: "Is killing animals for food morally permissible when alternatives exist?",
+        stanceA: "Killing animals is wrong, unless and until there are no alternatives due to physical, geographical, immediate situational, or medical constraints.",
+        stanceB: "It is morally acceptable to kill animals for food simply because humans enjoy the taste and culinary tradition.",
+        central: "Does human sensory pleasure justify inflicting sentient harm when viable nutritional and ecological alternatives exist?",
+        premiseA: "Moral obligation requires minimizing avoidable suffering whenever survival or health is not threatened.",
+        premiseB: "Human culinary enjoyment and cultural preference carry decisive moral weight over animal sentience.",
+        values: [
+          "Sentientist Harm Minimization vs. Anthropocentric Culinary Preference",
+          "Moral Necessity Threshold: Survival/Health vs. Taste/Convenience"
+        ],
+        shared: [
+          "Killing animals for survival in extreme geographical or medical scarcity is permissible.",
+          "Unnecessary cruelty outside food production lacks moral justification."
+        ],
+        turns: [
+          {
+            id: "turn-a1",
+            side: "A",
+            author: "@varun",
+            roleTag: "[Core Argument]",
+            claimType: "Normative / Value",
+            scope: "Conditional / Bounded Claim",
+            text: "Killing animals is wrong, unless and until there are no alternatives due to physical, geographical, immediate situational, or medical constraints.",
+            highlightPhrase: "unless and until there are no alternatives",
+            assumption: "Assumes sentient animals hold moral status sufficient to override non-essential human preferences.",
+            biasNote: "Clear boundary condition stated; requires empirical clarity on what qualifies as a medical or geographical constraint.",
+            steelman: "Moral duty requires avoiding harm to sentient beings whenever viable survival and health alternatives exist.",
+            deltas: 2
+          },
+          {
+            id: "turn-a2",
+            side: "B",
+            author: "@alex",
+            roleTag: "[Core Argument]",
+            claimType: "Normative / Value",
+            scope: "Universal Claim",
+            text: "It is okay to kill animals for food just for taste, because culinary pleasure and cultural tradition are central to human flourishing.",
+            highlightPhrase: "just for taste",
+            assumption: "Assumes human sensory pleasure carries greater moral weight than an animal's interest in continued life.",
+            biasNote: "Appeal to Tradition / Hedonic Prioritization: Does not specify if any level of animal suffering limits culinary pleasure.",
+            steelman: "Human aesthetic, cultural, and culinary experiences hold primary value in an anthropocentric ethical framework.",
+            deltas: 1
+          }
+        ]
+      },
+      reservation: {
+        id: "CRX-519",
+        shortLabel: "Reservation Policy",
+        pace: "async",
+        statusLabel: "Active • Slow Async",
+        topic: "Should affirmative reservation policies be scrapped completely in favor of pure merit?",
+        stanceA: "Reservation policies should be reformed with periodic self-review and creamy-layer audits rather than scrapped completely, because structural uplift requires targeted institutional access.",
+        stanceB: "Reservation should be scrapped completely because it kills merit and compromises institutional efficiency.",
+        central: "How should a society balance procedural individual merit against structural representation for historically marginalized groups?",
+        premiseA: "Merit cannot be measured fairly without accounting for generational disparities in baseline opportunity.",
+        premiseB: "Selection criteria must remain strictly blind to group identity to preserve excellence and fairness.",
+        values: [
+          "Substantive Corrective Justice vs. Formal Procedural Neutrality",
+          "Institutional Representation vs. Standardized Exam Selection"
+        ],
+        shared: [
+          "Unchecked policies without periodic review can create unintended intra-group distortions.",
+          "Foundational K-12 education and skill-building need massive investment."
+        ],
+        turns: [
+          {
+            id: "turn-r1",
+            side: "B",
+            author: "@rohan",
+            roleTag: "[Core Argument]",
+            claimType: "Normative / Value",
+            scope: "Universal Claim",
+            text: "Reservation should be scrapped completely because it kills merit and lowers institutional competitiveness.",
+            highlightPhrase: "scrapped completely",
+            assumption: "Assumes standardized exam scores measure pure individual merit independently of socio-economic starting lines.",
+            biasNote: "Universal Generalization: Equates all affirmative mechanisms with the absence of standards.",
+            steelman: "Public institutions serve society best when selection relies strictly on current performance metrics.",
+            deltas: 1
+          },
+          {
+            id: "turn-r2",
+            side: "A",
+            author: "@ananya",
+            roleTag: "[Boundary Clarification]",
+            claimType: "Mixed Empirical & Normative",
+            scope: "Conditional / Bounded Claim",
+            text: "Wait—do you mean unchecked reservation with no periodic self-review is flawed, or that we should abandon structural uplift even where generational exclusion persists?",
+            highlightPhrase: "unchecked reservation with no periodic self-review",
+            assumption: "Assumes corrective policy can combine targeted uplift with periodic empirical audits.",
+            biasNote: "Constructive boundary distinction separating permanent quotas from reviewable affirmative access.",
+            steelman: "Targeted institutional access remains necessary for historically excluded communities if paired with periodic review.",
+            deltas: 3
+          }
+        ]
+      },
+      nepotism: {
+        id: "CRX-307",
+        shortLabel: "Nepotism & Merit",
+        pace: "live",
+        statusLabel: "Witnessing / Archive",
+        topic: "Is nepotism inherently wrong across all professions and institutions?",
+        stanceA: "Nepotism is wrong in public and merit-bound institutions where opaque privilege displaces qualified candidates, though family mentorship in private craft is distinct.",
+        stanceB: "Nepotism is a natural expression of family trust and network continuity, and markets naturally penalize incompetent heirs.",
+        central: "Where does legitimate familial transmission of craft and trust end, and unfair institutional gatekeeping begin?",
+        premiseA: "Public and corporate roles carry an implicit contract of open, merit-based competition.",
+        premiseB: "Private enterprise owners hold associative liberty to select trusted successors.",
+        values: [
+          "Equal Opportunity & Institutional Legitimacy vs. Familial & Associative Liberty"
+        ],
+        shared: [
+          "In taxpayer-funded public office, familial favoritism is illegitimate."
+        ],
+        turns: [
+          {
+            id: "turn-n1",
+            side: "A",
+            author: "@dev",
+            roleTag: "[Boundary Clarification]",
+            claimType: "Normative / Value",
+            scope: "Conditional / Bounded Claim",
+            text: "Saying 'nepotism is wrong' requires defining wrong: when a public institution or listed corporation bypasses qualified applicants for an heir, it violates procedural trust.",
+            highlightPhrase: "bypasses qualified applicants for an heir",
+            assumption: "Distinguishes fiduciary public/corporate roles from small private family apprenticeships.",
+            biasNote: "High precision: specifies institutional context and mechanism of harm.",
+            steelman: "Institutional gatekeeping based on bloodline rather than competence erodes public trust and social mobility.",
+            deltas: 2
+          },
+          {
+            id: "turn-n2",
+            side: "B",
+            author: "@meera",
+            roleTag: "[Empirical Counter-Check]",
+            claimType: "Empirical / Factual",
+            scope: "Conditional / Bounded Claim",
+            text: "In private family businesses, passing down tacit knowledge lowers agency costs, and consumer markets naturally punish incompetent successors without needing regulation.",
+            highlightPhrase: "markets naturally punish incompetent successors",
+            assumption: "Assumes market competition operates without monopolistic barriers or entrenched network lock-in.",
+            biasNote: "Survivorship / Market Perfection Assumption: Overlooks industries where network gatekeeping insulates poor performance.",
+            steelman: "Private business succession reflects property rights and intergenerational stewardship, subject to market discipline.",
+            deltas: 1
+          }
+        ]
+      }
+    };
+
+    const KNOWLEDGE_ITEMS = [
+      {
+        title: "What Is Morality?",
+        tag: "Foundations",
+        summary: "Morality refers to the descriptive codes of conduct held by a society or individual, as well as the normative standards of right and wrong that claim universal or rational authority.",
+        distinction: "Key distinction: Descriptive morality (what people actually believe) vs. Normative morality (what people ought to do).",
+        link: "https://plato.stanford.edu/entries/morality-definition/",
+        linkLabel: "Stanford Encyclopedia: Definition of Morality"
+      },
+      {
+        title: "What Are Ethics?",
+        tag: "Normative Frameworks",
+        summary: "Ethics is the systematic philosophical study of moral reasoning, typically divided into three major lenses: Consequentialism (judging outcomes/utility), Deontology (judging duties and rules), and Virtue Ethics (judging moral character).",
+        distinction: "Debate tip: Most stalemates happen when Side A argues from Deontology ('it violates a duty') while Side B argues from Utilitarianism ('it maximizes pleasure/utility').",
+        link: "https://iep.utm.edu/ethics/",
+        linkLabel: "Internet Encyclopedia of Philosophy: Ethics"
+      },
+      {
+        title: "What Are Rights Based On?",
+        tag: "Political & Legal Philosophy",
+        summary: "Rights are justified claims or entitlements. Philosophers ground them in Natural Rights (inherent to human/sentient nature), Social Contract Theory (agreed upon for mutual protection), or Legal Positivism (created by enforceable law).",
+        distinction: "Debate tip: Clarify whether a claimed 'right' is a negative right (freedom from interference) or a positive right (entitlement to a resource).",
+        link: "https://plato.stanford.edu/entries/rights/",
+        linkLabel: "Stanford Encyclopedia: Rights"
+      },
+      {
+        title: "Normative vs. Empirical Claims",
+        tag: "Epistemology",
+        summary: "An empirical claim describes measurable facts about the world ('X reduces test scores by 8%'). A normative claim prescribes a value judgment ('Efficiency matters more than representation').",
+        distinction: "Debate tip: Data can resolve empirical cruxes, but only explicit value weighting can resolve normative cruxes.",
+        link: "https://plato.stanford.edu/entries/fact-value/",
+        linkLabel: "Stanford Encyclopedia: Fact/Value Distinction"
+      }
+    ];
+
+    // Build isolated per-room state dictionary from presets
+    function createRoomFromPreset(p) {
+      return {
+        roomCode: p.id,
+        shortLabel: p.shortLabel,
+        statusLabel: p.statusLabel,
+        visibility: "public",
+        pace: p.pace,
+        topic: p.topic,
+        centralDistillation: p.central,
+        stanceA: { version: "1.0", text: p.stanceA, premise: p.premiseA },
+        stanceB: { version: "1.0", text: p.stanceB, premise: p.premiseB },
+        stanceHistory: [],
+        cruxes: {
+          values: [...p.values],
+          shared: [...p.shared]
+        },
+        turns: JSON.parse(JSON.stringify(p.turns))
+      };
+    }
+
+    const roomsById = {
+      "CRX-842": createRoomFromPreset(PRESETS.animals),
+      "CRX-519": createRoomFromPreset(PRESETS.reservation),
+      "CRX-307": createRoomFromPreset(PRESETS.nepotism)
+    };
+
+    let appState = {
+      currentView: "home",
+      activeRoomCode: "CRX-842",
+      draftRoomCode: "CRX-842",
+      draftVisibility: "public",
+      draftPace: "live",
+      activeRole: "A", // 'A', 'B', or 'observer'
+      mobilePane: "A",
+      cruxOpen: false,
+      gateVerified: false,
+      karma: 145,
+      deltas: 4,
+      credits: 48,
+      signedIn: false,
+      refiningSide: "A"
+    };
+
+    function getCurrentRoom() {
+      if (!roomsById[appState.activeRoomCode]) {
+        roomsById[appState.activeRoomCode] = createRoomFromPreset(PRESETS.animals);
+      }
+      return roomsById[appState.activeRoomCode];
+    }
+
+    // =========================================================================
+    // 3. INITIALIZATION & TWO-TAB BROADCAST SYNC
+    // =========================================================================
+    function init() {
+      const savedTheme = localStorage.getItem('crux_visual_theme') || 'editorial';
+      setVisualTheme(savedTheme, true);
+      renderQRCode(appState.draftRoomCode);
+      renderArenaRoomSwitcher();
+      renderKnowledgeBase();
+      loadSavedConfig();
+      updateKarmaUI();
+      renderArena();
+
+      if (window.location.hash && window.location.hash.startsWith('#room=')) {
+        const code = window.location.hash.replace('#room=', '').trim().toUpperCase();
+        if (code) {
+          document.getElementById('partner-code-input').value = code;
+          if (roomsById[code]) {
+            appState.activeRoomCode = code;
+            renderArena();
+            navigate('arena');
+          }
+        }
+      }
+
+      if (syncChannel) {
+        syncChannel.onmessage = (event) => {
+          if (event.data && event.data.type === 'SYNC_ROOM' && event.data.roomCode) {
+            roomsById[event.data.roomCode] = event.data.payload;
+            if (appState.activeRoomCode === event.data.roomCode) {
+              renderArena();
+            }
+            renderArenaRoomSwitcher();
+            showToast(`Synced live update in #${event.data.roomCode}`);
+          }
+        };
+      }
+    }
+
+    function broadcastCurrentRoom() {
+      const room = getCurrentRoom();
+      try {
+        localStorage.setItem('crux_room_' + room.roomCode, JSON.stringify(room));
+      } catch (e) {}
+      if (syncChannel) {
+        syncChannel.postMessage({ type: 'SYNC_ROOM', roomCode: room.roomCode, payload: room });
+      }
+      renderArenaRoomSwitcher();
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast-notification');
+      const text = document.getElementById('toast-text');
+      if (!toast || !text) return;
+      text.textContent = msg;
+      toast.classList.remove('hidden');
+      toast.classList.add('flex');
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer = setTimeout(() => {
+        toast.classList.add('hidden');
+        toast.classList.remove('flex');
+      }, 2500);
+    }
+
+    // =========================================================================
+    // 4. THREE-TAB NAVIGATION & VIEW ROUTER
+    // =========================================================================
+    function navigate(view) {
+      appState.currentView = view;
+      ['home', 'arena', 'start', 'distill'].forEach(v => {
+        const el = document.getElementById('view-' + v);
+        if (el) el.classList.add('hidden');
+      });
+
+      const targetEl = document.getElementById('view-' + view);
+      if (targetEl) {
+        targetEl.classList.remove('hidden');
+        targetEl.classList.remove('animate-view-in');
+        void targetEl.offsetWidth;
+        targetEl.classList.add('animate-view-in');
+      }
+
+      // Highlight active top navigation tab unmistakably
+      const navMap = {
+        home: { tab: 'nav-tab-home', dot: 'nav-dot-home' },
+        arena: { tab: 'nav-tab-arena', dot: 'nav-dot-arena' },
+        distill: { tab: 'nav-tab-arena', dot: 'nav-dot-arena' },
+        start: { tab: 'nav-tab-start', dot: 'nav-dot-start' }
+      };
+
+      ['home', 'arena', 'start'].forEach(key => {
+        const btn = document.getElementById('nav-tab-' + key);
+        const dot = document.getElementById('nav-dot-' + key);
+        const isActive = (view === key) || (view === 'distill' && key === 'arena');
+        if (isActive) {
+          btn.className = 'inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-ink text-white shadow-xs transition-all';
+          dot.className = 'w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse';
+        } else {
+          btn.className = 'inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold text-stone-600 hover:text-ink transition-all';
+          dot.className = 'w-1.5 h-1.5 rounded-full bg-stone-400';
+        }
+      });
+
+      document.getElementById('nav-room-code').textContent = '#' + appState.activeRoomCode;
+      if (view === 'arena') renderArena();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // =========================================================================
+    // 5. START / PAIR WORKSPACE & CENTRAL AI DISTILLATION
+    // =========================================================================
+    function setRoomOption(key, val) {
+      if (key === 'visibility') {
+        appState.draftVisibility = val;
+        document.getElementById('btn-vis-public').className = val === 'public'
+          ? 'px-2.5 py-1.5 rounded-lg text-xs font-medium bg-ink text-white'
+          : 'px-2.5 py-1.5 rounded-lg text-xs font-medium bg-white border border-borderwarm text-stone-600';
+        document.getElementById('btn-vis-private').className = val === 'private'
+          ? 'px-2.5 py-1.5 rounded-lg text-xs font-medium bg-ink text-white'
+          : 'px-2.5 py-1.5 rounded-lg text-xs font-medium bg-white border border-borderwarm text-stone-600';
+      } else if (key === 'pace') {
+        appState.draftPace = val;
+        document.getElementById('btn-pace-live').className = val === 'live'
+          ? 'px-2.5 py-1.5 rounded-lg text-xs font-medium bg-ink text-white'
+          : 'px-2.5 py-1.5 rounded-lg text-xs font-medium bg-white border border-borderwarm text-stone-600';
+        document.getElementById('btn-pace-async').className = val === 'async'
+          ? 'px-2.5 py-1.5 rounded-lg text-xs font-medium bg-ink text-white'
+          : 'px-2.5 py-1.5 rounded-lg text-xs font-medium bg-white border border-borderwarm text-stone-600';
+      }
+    }
+
+    function applyPreset(key) {
+      const p = PRESETS[key];
+      if (!p) return;
+      document.getElementById('init-topic').value = p.topic;
+      document.getElementById('init-stance-a').value = p.stanceA;
+      document.getElementById('init-stance-b').value = p.stanceB;
+      appState.draftRoomCode = p.id;
+      document.getElementById('home-generated-code').textContent = p.id;
+      document.getElementById('share-code-inline').textContent = p.id;
+      renderQRCode(p.id);
+      showToast(`Loaded ${p.shortLabel} preset`);
+    }
+
+    function regenerateCode() {
+      const num = Math.floor(100 + Math.random() * 900);
+      appState.draftRoomCode = 'CRX-' + num;
+      document.getElementById('home-generated-code').textContent = appState.draftRoomCode;
+      document.getElementById('share-code-inline').textContent = appState.draftRoomCode;
+      renderQRCode(appState.draftRoomCode);
+    }
+
+    function renderQRCode(code) {
+      let hash = 0;
+      for (let i = 0; i < code.length; i++) hash = ((hash << 5) - hash) + code.charCodeAt(i);
+      let cells = '';
+      for (let r = 0; r < 7; r++) {
+        for (let c = 0; c < 7; c++) {
+          const isFinder = (r < 2 && c < 2) || (r < 2 && c > 4) || (r > 4 && c < 2);
+          const bit = ((hash >> ((r * 7 + c) % 24)) & 1) === 1;
+          if (isFinder || bit) {
+            cells += `<rect x="${c * 10 + 5}" y="${r * 10 + 5}" width="8" height="8" rx="1.5" fill="#18181B" />`;
+          }
+        }
+      }
+      const container = document.getElementById('qr-svg-container');
+      if (container) container.innerHTML = `<svg viewBox="0 0 80 80" class="w-full h-full">${cells}</svg>`;
+    }
+
+    function copyRoomInvite() {
+      const url = window.location.origin + window.location.pathname + '#room=' + appState.draftRoomCode;
+      navigator.clipboard?.writeText(url);
+      const btn = document.getElementById('btn-copy-invite');
+      btn.textContent = 'Copied Invite Link!';
+      showToast(`Copied invite link for #${appState.draftRoomCode}`);
+      setTimeout(() => { btn.textContent = 'Copy Invite Link'; }, 2000);
+    }
+
+    function simulateMobileQRScan() {
+      document.getElementById('partner-code-input').value = appState.draftRoomCode;
+      joinWithPartnerCode();
+    }
+
+    function launchFromSideA() {
+      const topic = document.getElementById('init-topic').value.trim();
+      const sA = document.getElementById('init-stance-a').value.trim();
+      const sB = document.getElementById('init-stance-b').value.trim();
+      if (!topic || !sA) {
+        document.getElementById('init-topic').focus();
+        return;
+      }
+
+      const code = appState.draftRoomCode;
+      const existing = roomsById[code];
+      const baseTurns = existing ? existing.turns : [
+        {
+          id: 'turn-' + Date.now() + '-a',
+          side: 'A',
+          author: '@varun',
+          roleTag: '[Core Argument]',
+          claimType: 'Normative / Value',
+          scope: 'Conditional / Bounded Claim',
+          text: sA,
+          highlightPhrase: sA.split(' ').slice(0, 4).join(' '),
+          assumption: 'Frames harm minimization around explicit necessity boundaries.',
+          biasNote: 'Initial thesis locked; test edge-case definitions.',
+          steelman: sA.slice(0, 110),
+          deltas: 1
+        },
+        {
+          id: 'turn-' + Date.now() + '-b',
+          side: 'B',
+          author: '@partner',
+          roleTag: '[Core Argument]',
+          claimType: 'Normative / Value',
+          scope: 'Universal Claim',
+          text: sB || 'Counter-position awaiting Side B input.',
+          highlightPhrase: (sB || 'Counter-position').split(' ').slice(0, 4).join(' '),
+          assumption: 'Prioritizes individual autonomy or procedural neutrality.',
+          biasNote: 'Verify whether boundary exceptions apply.',
+          steelman: (sB || 'Counter-position awaiting Side B input.').slice(0, 110),
+          deltas: 0
+        }
+      ];
+
+      roomsById[code] = {
+        roomCode: code,
+        shortLabel: topic.slice(0, 22) + (topic.length > 22 ? '...' : ''),
+        statusLabel: appState.draftPace === 'async' ? 'Active • Slow Async' : 'Live Sync Room',
+        visibility: appState.draftVisibility,
+        pace: appState.draftPace,
+        topic,
+        centralDistillation: synthesizeCentralConflict(topic, sA, sB),
+        stanceA: { version: "1.0", text: sA, premise: extractCorePremise(sA) },
+        stanceB: { version: "1.0", text: sB || "Counter-position awaiting Side B input.", premise: extractCorePremise(sB) },
+        stanceHistory: existing ? existing.stanceHistory : [],
+        cruxes: existing ? existing.cruxes : {
+          values: ["Harm Minimization & Structural Uplift vs. Individual Liberty & Procedural Neutrality"],
+          shared: ["Both participants agree to test falsifiable boundary conditions under Rapoport's Rules."]
+        },
+        turns: baseTurns
+      };
+
+      appState.activeRoomCode = code;
+      appState.activeRole = "A";
+      appState.gateVerified = false;
+      broadcastCurrentRoom();
+      openDistillationStage();
+    }
+
+    function joinWithPartnerCode() {
+      const entered = document.getElementById('partner-code-input').value.trim().toUpperCase();
+      if (!entered) {
+        document.getElementById('partner-code-input').focus();
+        return;
+      }
+
+      const stored = localStorage.getItem('crux_room_' + entered);
+      if (stored) {
+        try {
+          roomsById[entered] = JSON.parse(stored);
+        } catch (e) {}
+      } else if (!roomsById[entered]) {
+        const sB = document.getElementById('init-stance-b').value.trim();
+        const base = createRoomFromPreset(PRESETS.animals);
+        base.roomCode = entered;
+        base.shortLabel = "Paired Room";
+        if (sB) base.stanceB = { version: "1.0", text: sB, premise: extractCorePremise(sB) };
+        roomsById[entered] = base;
+      }
+
+      appState.activeRoomCode = entered;
+      appState.activeRole = "B";
+      appState.gateVerified = false;
+      broadcastCurrentRoom();
+      openDistillationStage();
+    }
+
+    function openDistillationStage() {
+      const room = getCurrentRoom();
+      document.getElementById('distill-topic-title').textContent = room.topic;
+      document.getElementById('distill-room-badge').textContent = room.roomCode;
+      document.getElementById('distill-central-summary').textContent = room.centralDistillation;
+      document.getElementById('distill-stance-a').textContent = room.stanceA.text;
+      document.getElementById('distill-premise-a').textContent = room.stanceA.premise;
+      document.getElementById('distill-stance-b').textContent = room.stanceB.text;
+      document.getElementById('distill-premise-b').textContent = room.stanceB.premise;
+      navigate('distill');
+    }
+
+    function refreshCentralDistillation() {
+      const room = getCurrentRoom();
+      room.centralDistillation = synthesizeCentralConflict(room.topic, room.stanceA.text, room.stanceB.text);
+      document.getElementById('distill-central-summary').textContent = room.centralDistillation;
+      showToast("Refreshed Central AI Distillation");
+    }
+
+    function confirmInitialStances() {
+      broadcastCurrentRoom();
+      navigate('arena');
+    }
+
+    // =========================================================================
+    // 6. DEBATE ARENA & ISOLATED ONGOING PUBLIC ROOM SWITCHER
+    // =========================================================================
+    function renderArenaRoomSwitcher() {
+      const container = document.getElementById('arena-room-switcher');
+      if (!container) return;
+      const codes = Object.keys(roomsById);
+      container.innerHTML = codes.map(code => {
+        const r = roomsById[code];
+        const isCurrent = code === appState.activeRoomCode;
+        return `
+          <div class="p-3 rounded-xl border transition-all flex flex-col justify-between gap-2 ${
+            isCurrent ? 'bg-accentlight/65 border-accent shadow-xs' : 'bg-paper border-borderwarm hover:bg-subtle/60'
+          }">
+            <div>
+              <div class="flex items-center justify-between text-[11px] mb-1">
+                <span class="font-mono font-semibold ${isCurrent ? 'text-accent' : 'text-stone-600'}">#${r.roomCode} &bull; ${escapeHtml(r.shortLabel)}</span>
+                <span class="px-2 py-0.5 rounded-full bg-white border border-borderwarm text-[10px] text-stone-700">${r.turns.length} turns</span>
+              </div>
+              <p class="text-xs font-medium text-ink line-clamp-1">${escapeHtml(r.topic)}</p>
+            </div>
+            <div class="flex items-center justify-between pt-1.5 border-t border-borderwarm/70 text-[11px]">
+              <button onclick="selectArenaRoom('${r.roomCode}', 'observer')" class="font-medium text-stone-600 hover:text-ink">
+                Witness Thread
+              </button>
+              <button onclick="selectArenaRoom('${r.roomCode}', 'B')" class="px-2.5 py-0.5 rounded bg-white hover:bg-ink hover:text-white border border-borderwarm font-medium text-ink transition-colors">
+                ${isCurrent && appState.activeRole !== 'observer' ? 'Active Room' : 'Take Over Seat'}
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function selectArenaRoom(roomCode, role) {
+      if (!roomsById[roomCode]) return;
+      appState.activeRoomCode = roomCode;
+      appState.activeRole = role || 'A';
+      appState.gateVerified = false;
+      document.getElementById('nav-room-code').textContent = '#' + roomCode;
+      renderArena();
+      showToast(`Switched to #${roomCode} (${role === 'observer' ? 'Witnessing' : 'Side ' + role})`);
+    }
+
+    function renderArena() {
+      const room = getCurrentRoom();
+      renderArenaRoomSwitcher();
+
+      document.getElementById('arena-room-pill').textContent = '#' + room.roomCode;
+      document.getElementById('arena-topic-heading').textContent = room.topic;
+      document.getElementById('arena-central-distillation').textContent = room.centralDistillation;
+      document.getElementById('arena-stance-a-text').textContent = room.stanceA.text;
+      document.getElementById('arena-stance-b-text').textContent = room.stanceB.text;
+      document.getElementById('stance-a-version').textContent = 'v' + room.stanceA.version;
+      document.getElementById('stance-b-version').textContent = 'v' + room.stanceB.version;
+
+      // Async digest strip
+      const asyncStrip = document.getElementById('async-digest-strip');
+      if (room.pace === 'async') asyncStrip.classList.remove('hidden');
+      else asyncStrip.classList.add('hidden');
+
+      // Active vs Witnessing Mode Styling
+      const banner = document.getElementById('arena-mode-banner');
+      const dot = document.getElementById('mode-indicator-dot');
+      const title = document.getElementById('mode-indicator-title');
+      const desc = document.getElementById('mode-indicator-desc');
+      const takeoverBtn = document.getElementById('btn-takeover');
+      const composer = document.getElementById('stepped-composer-dock');
+
+      ['A', 'B', 'observer'].forEach(r => {
+        const btn = document.getElementById('role-btn-' + r);
+        btn.className = appState.activeRole === r
+          ? 'px-2.5 py-1 rounded-md text-[11px] font-medium bg-ink text-white'
+          : 'px-2.5 py-1 rounded-md text-[11px] font-medium text-stone-600 hover:text-ink';
+      });
+
+      if (appState.activeRole === 'observer') {
+        banner.className = 'rounded-xl px-4 py-2.5 border border-slate-300 bg-slate-100/80 flex flex-wrap items-center justify-between gap-3 text-xs';
+        dot.className = 'w-2.5 h-2.5 rounded-full bg-slate-500';
+        title.textContent = 'Witnessing / Archive Mode';
+        desc.textContent = 'Read-only observation. Click "Take Over Debate" to claim an open seat.';
+        takeoverBtn.classList.remove('hidden');
+        composer.classList.add('hidden');
+      } else {
+        banner.className = 'rounded-xl px-4 py-2.5 border border-accent/30 bg-accentlight/60 flex flex-wrap items-center justify-between gap-3 text-xs';
+        dot.className = 'w-2.5 h-2.5 rounded-full bg-accent animate-pulse';
+        title.textContent = `Active Participant Mode (Side ${appState.activeRole})`;
+        desc.textContent = `Posting to ${appState.activeRole === 'A' ? 'Proposition A' : 'Counter-Position B'}.`;
+        takeoverBtn.classList.add('hidden');
+        composer.classList.remove('hidden');
+        document.getElementById('composer-posting-as').textContent = `Posting to ${appState.activeRole === 'A' ? 'Proposition A' : 'Counter-Position B'}`;
+      }
+
+      // Comprehension Gate Opponent Summary
+      const oppTurns = room.turns.filter(t => t.side !== appState.activeRole);
+      const latestOpp = oppTurns[oppTurns.length - 1];
+      document.getElementById('gate-opponent-summary').textContent = latestOpp
+        ? `Opponent's Core Claim: "${latestOpp.steelman}"`
+        : `Opponent's Initial Stance: "${appState.activeRole === 'A' ? room.stanceB.text : room.stanceA.text}"`;
+
+      updateGateUI();
+      renderTurnColumns();
+      renderCruxInspector();
+      renderStanceHistory();
+    }
+
+    function switchRole(role) {
+      appState.activeRole = role;
+      appState.gateVerified = false;
+      renderArena();
+    }
+
+    function takeOverDebate() {
+      appState.activeRole = 'B';
+      appState.gateVerified = false;
+      renderArena();
+      showToast(`Claimed Side B seat in #${appState.activeRoomCode}`);
+    }
+
+    // Bug Fix 2: Always preserve lg:block so desktop never loses a column after mobile toggle
+    function setMobilePane(side) {
+      appState.mobilePane = side;
+      const paneA = document.getElementById('pane-A');
+      const paneB = document.getElementById('pane-B');
+      const tabA = document.getElementById('mobile-tab-a');
+      const tabB = document.getElementById('mobile-tab-b');
+
+      if (side === 'A') {
+        paneA.className = 'block lg:block bg-white border border-borderwarm rounded-2xl p-4 sm:p-5 shadow-xs space-y-4';
+        paneB.className = 'hidden lg:block bg-white border border-borderwarm rounded-2xl p-4 sm:p-5 shadow-xs space-y-4';
+        tabA.className = 'py-1.5 rounded-lg text-xs font-semibold bg-white text-ink shadow-xs';
+        tabB.className = 'py-1.5 rounded-lg text-xs font-semibold text-stone-600';
+      } else {
+        paneB.className = 'block lg:block bg-white border border-borderwarm rounded-2xl p-4 sm:p-5 shadow-xs space-y-4';
+        paneA.className = 'hidden lg:block bg-white border border-borderwarm rounded-2xl p-4 sm:p-5 shadow-xs space-y-4';
+        tabB.className = 'py-1.5 rounded-lg text-xs font-semibold bg-white text-ink shadow-xs';
+        tabA.className = 'py-1.5 rounded-lg text-xs font-semibold text-stone-600';
+      }
+    }
+
+    function renderTurnColumns() {
+      const room = getCurrentRoom();
+      const turnsA = room.turns.filter(t => t.side === 'A');
+      const turnsB = room.turns.filter(t => t.side === 'B');
+      document.getElementById('count-turns-a').textContent = `${turnsA.length} ${turnsA.length === 1 ? 'turn' : 'turns'}`;
+      document.getElementById('count-turns-b').textContent = `${turnsB.length} ${turnsB.length === 1 ? 'turn' : 'turns'}`;
+
+      document.getElementById('turns-list-A').innerHTML = turnsA.map(renderTurnCard).join('');
+      document.getElementById('turns-list-B').innerHTML = turnsB.map(renderTurnCard).join('');
+    }
+
+    function renderTurnCard(turn) {
+      let formattedText = escapeHtml(turn.text);
+      if (turn.highlightPhrase) {
+        const escapedPhrase = escapeHtml(turn.highlightPhrase);
+        if (formattedText.includes(escapedPhrase)) {
+          formattedText = formattedText.replace(
+            escapedPhrase,
+            `<span class="epistemic-span" onclick="toggleSpanPopover('${turn.id}')" title="Click to highlight AI Epistemic Flag">${escapedPhrase}</span>`
+          );
+        }
+      }
+
+      return `
+        <article id="card-${turn.id}" class="p-4 rounded-xl bg-paper border border-borderwarm space-y-3 transition-all">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <span class="font-mono text-xs font-semibold text-ink">${escapeHtml(turn.author)}</span>
+              <span class="text-[11px] font-mono text-accent">${escapeHtml(turn.roleTag)}</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="px-2 py-0.5 rounded bg-white border border-borderwarm text-[10px] font-medium text-stone-600">${escapeHtml(turn.claimType)}</span>
+              <span class="px-2 py-0.5 rounded bg-white border border-borderwarm text-[10px] font-medium text-stone-600">${escapeHtml(turn.scope)}</span>
+            </div>
+          </div>
+
+          <p class="text-sm text-ink leading-relaxed">${formattedText}</p>
+
+          <!-- Inline Span Popover / Epistemic Breakdown -->
+          <div id="popover-${turn.id}" class="p-3 rounded-lg bg-white border border-borderwarm space-y-1.5 text-xs transition-all">
+            <div class="flex items-center justify-between">
+              <span class="font-semibold text-stone-700">AI Epistemic Flag</span>
+              <button id="btn-refresh-${turn.id}" onclick="refreshTurnAssumption('${turn.id}')" class="text-[11px] font-medium text-accent hover:underline">
+                &#8635; Refresh AI Assumption Flag
+              </button>
+            </div>
+            <p class="text-stone-600"><strong class="text-ink">Unstated Assumption:</strong> ${escapeHtml(turn.assumption)}</p>
+            <p class="text-ambermuted"><strong>Bias / Scope Check:</strong> ${escapeHtml(turn.biasNote)}</p>
+          </div>
+
+          <div class="pt-2 border-t border-borderwarm/70 flex flex-wrap items-center justify-between gap-2 text-[11px]">
+            <span class="text-stone-500">Steel-Man: "${escapeHtml(turn.steelman)}"</span>
+            <div class="flex items-center gap-1.5">
+              <button onclick="openFactModalForTurn('${turn.id}')" class="px-2.5 py-1 rounded-lg bg-white hover:bg-subtle border border-borderwarm font-medium text-stone-700 transition-colors">
+                Check Empirical Claim
+              </button>
+              <button onclick="awardDeltaToTurn('${turn.id}')" class="px-2.5 py-1 rounded-lg bg-white hover:bg-accentlight border border-borderwarm font-mono font-semibold text-accent transition-colors">
+                &Delta; Pin (${turn.deltas})
+              </button>
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    function toggleSpanPopover(turnId) {
+      const el = document.getElementById('popover-' + turnId);
+      if (!el) return;
+      el.classList.toggle('ring-2');
+      el.classList.toggle('ring-amber-400');
+      el.classList.toggle('bg-amberbg/40');
+    }
+
+    function openFactModalForTurn(turnId) {
+      const room = getCurrentRoom();
+      const turn = room.turns.find(t => t.id === turnId);
+      openFactModal(turn ? turn.text : '');
+    }
+
+    async function refreshTurnAssumption(turnId) {
+      const room = getCurrentRoom();
+      const turn = room.turns.find(t => t.id === turnId);
+      if (!turn) return;
+      const btn = document.getElementById('btn-refresh-' + turnId);
+      if (btn) btn.textContent = 'Auditing...';
+      const analysis = await analyzeArgumentWithAI(turn.text, room.topic, true);
+      turn.assumption = analysis.assumption;
+      turn.biasNote = analysis.biasNote;
+      turn.highlightPhrase = analysis.highlightPhrase;
+      turn.scope = analysis.scope;
+      broadcastCurrentRoom();
+      renderTurnColumns();
+      showToast("Refreshed AI assumption & scope flag");
+    }
+
+    function awardDeltaToTurn(turnId) {
+      const room = getCurrentRoom();
+      const turn = room.turns.find(t => t.id === turnId);
+      if (!turn) return;
+      turn.deltas += 1;
+      appState.deltas += 1;
+      addKarma(25);
+      broadcastCurrentRoom();
+      renderTurnColumns();
+      renderCruxInspector();
+      showToast("Awarded Δ Clarification Pin (+25 Karma)");
+    }
+
+    // =========================================================================
+    // 7. CRUX INSPECTOR DRAWER & JUMP LINKS
+    // =========================================================================
+    function toggleCruxDrawer() {
+      appState.cruxOpen = !appState.cruxOpen;
+      const wrapper = document.getElementById('dialogue-columns-wrapper');
+      const panel = document.getElementById('crux-inspector-panel');
+      if (appState.cruxOpen) {
+        wrapper.classList.remove('lg:col-span-12');
+        wrapper.classList.add('lg:col-span-8');
+        panel.classList.remove('hidden');
+      } else {
+        wrapper.classList.remove('lg:col-span-8');
+        wrapper.classList.add('lg:col-span-12');
+        panel.classList.add('hidden');
+      }
+    }
+
+    function renderCruxInspector() {
+      const room = getCurrentRoom();
+      document.getElementById('crux-badge-count').textContent = room.cruxes.values.length + room.cruxes.shared.length;
+      document.getElementById('crux-values-list').innerHTML = room.cruxes.values
+        .map(v => `<div class="p-2 rounded bg-white border border-borderwarm">${escapeHtml(v)}</div>`).join('');
+      document.getElementById('crux-shared-list').innerHTML = room.cruxes.shared
+        .map(s => `<div class="p-2 rounded bg-white border border-borderwarm">${escapeHtml(s)}</div>`).join('');
+      document.getElementById('crux-ledger-list').innerHTML = room.turns
+        .map(t => `
+          <button onclick="jumpToTurn('${t.id}', '${t.side}')" class="w-full text-left p-2 rounded bg-white hover:bg-accentlight/50 border border-borderwarm transition-colors">
+            <div class="flex justify-between text-[10px] font-mono text-stone-500">
+              <span>Side ${t.side} &bull; ${escapeHtml(t.author)}</span>
+              <span class="text-accent">&Delta; ${t.deltas}</span>
+            </div>
+            <div class="text-stone-700 mt-0.5 line-clamp-2">${escapeHtml(t.assumption)}</div>
+          </button>
+        `).join('');
+    }
+
+    function jumpToTurn(turnId, side) {
+      if (window.innerWidth < 1024) setMobilePane(side);
+      const card = document.getElementById('card-' + turnId);
+      if (card) {
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        card.classList.add('turn-highlight');
+        setTimeout(() => card.classList.remove('turn-highlight'), 2800);
+      }
+    }
+
+    function recalculateCruxAI() {
+      const room = getCurrentRoom();
+      room.centralDistillation = synthesizeCentralConflict(room.topic, room.stanceA.text, room.stanceB.text);
+      document.getElementById('arena-central-distillation').textContent = room.centralDistillation;
+      renderCruxInspector();
+      showToast("Recalculated Living Crux Map");
+    }
+
+    // =========================================================================
+    // 8. STEPPED COMPOSER & AI REFEREE ENGINE
+    // =========================================================================
+    function updateGateUI() {
+      const gateBox = document.getElementById('gate-step-container');
+      const verifiedBadge = document.getElementById('gate-verified-badge');
+      const draftBox = document.getElementById('draft-step-container');
+
+      if (appState.gateVerified) {
+        gateBox.classList.add('hidden');
+        verifiedBadge.classList.remove('hidden');
+        draftBox.classList.remove('opacity-50', 'pointer-events-none');
+      } else {
+        gateBox.classList.remove('hidden');
+        verifiedBadge.classList.add('hidden');
+        draftBox.classList.add('opacity-50', 'pointer-events-none');
+      }
+    }
+
+    function quickVerifySteelMan() {
+      appState.gateVerified = true;
+      addKarma(15);
+      updateGateUI();
+      showToast("Comprehension Gate cleared (+15 Karma)");
+    }
+
+    function verifyCustomSteelMan() {
+      const val = document.getElementById('gate-steelman-input').value.trim();
+      if (val.length < 8) {
+        document.getElementById('gate-steelman-input').focus();
+        showToast("Please write a full charitable sentence summarizing your opponent's point");
+        return;
+      }
+      appState.gateVerified = true;
+      addKarma(15);
+      updateGateUI();
+      showToast("Steel-Man verified (+15 Karma)");
+    }
+
+    function resetSteelManGate() {
+      appState.gateVerified = false;
+      updateGateUI();
+    }
+
+    let lastSuggestedRewrite = "";
+
+    async function runPreFlightAudit() {
+      const draft = document.getElementById('composer-draft-input').value.trim();
+      if (!draft) {
+        document.getElementById('composer-draft-input').focus();
+        showToast("Type your draft argument first to run the Pre-Flight Audit");
+        return;
+      }
+
+      const room = getCurrentRoom();
+      const auditBox = document.getElementById('preflight-audit-box');
+      auditBox.classList.remove('hidden');
+      document.getElementById('audit-assumption-text').textContent = "Auditing unstated premises...";
+      document.getElementById('audit-bias-text').textContent = "Checking scope & cognitive leaps...";
+      document.getElementById('audit-socratic-text').textContent = "Formulating Socratic boundary question...";
+
+      const result = await analyzeArgumentWithAI(draft, room.topic, true);
+      document.getElementById('audit-assumption-text').textContent = result.assumption;
+      document.getElementById('audit-bias-text').textContent = result.biasNote;
+      document.getElementById('audit-socratic-text').textContent = result.socraticQuestion;
+
+      const rewriteRow = document.getElementById('audit-apply-refinement-row');
+      if (result.suggestedPrecision) {
+        lastSuggestedRewrite = result.suggestedPrecision;
+        document.getElementById('audit-suggested-rewrite').textContent = `Suggested Boundary Precision: "${result.suggestedPrecision}"`;
+        rewriteRow.classList.remove('hidden');
+      } else {
+        rewriteRow.classList.add('hidden');
+      }
+
+      addKarma(10);
+      showToast("Pre-Flight Audit complete (+10 Karma)");
+    }
+
+    function applySuggestedRefinement() {
+      if (lastSuggestedRewrite) {
+        document.getElementById('composer-draft-input').value = lastSuggestedRewrite;
+        document.getElementById('audit-apply-refinement-row').classList.add('hidden');
+        showToast("Applied boundary precision to draft");
+      }
+    }
+
+    async function publishTurn() {
+      const draft = document.getElementById('composer-draft-input').value.trim();
+      if (!draft || appState.activeRole === 'observer') return;
+
+      const room = getCurrentRoom();
+      const roleTag = document.getElementById('composer-role-tag').value;
+      const analysis = await analyzeArgumentWithAI(draft, room.topic, false);
+
+      const newTurn = {
+        id: 'turn-' + Date.now(),
+        side: appState.activeRole,
+        author: appState.activeRole === 'A' ? '@varun' : '@partner',
+        roleTag,
+        claimType: analysis.claimType,
+        scope: analysis.scope,
+        text: draft,
+        highlightPhrase: analysis.highlightPhrase,
+        assumption: analysis.assumption,
+        biasNote: analysis.biasNote,
+        steelman: analysis.steelman,
+        deltas: 0
+      };
+
+      room.turns.push(newTurn);
+      document.getElementById('composer-draft-input').value = '';
+      document.getElementById('gate-steelman-input').value = '';
+      document.getElementById('preflight-audit-box').classList.add('hidden');
+      appState.gateVerified = false;
+
+      broadcastCurrentRoom();
+      renderArena();
+      showToast(`Published turn to Side ${appState.activeRole}`);
+    }
+
+    let auditCycleCounter = 0;
+
+    async function analyzeArgumentWithAI(text, topic, isRefresh) {
+      if (isRefresh) auditCycleCounter++;
+
+      // 1. Try hosted /api/referee endpoint if deployed
+      try {
+        const res = await fetch('/api/referee', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text, topic })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.assumption) return data;
+        }
+      } catch (e) {}
+
+      // 2. Try optional local dev Gemini API key
+      const devKey = localStorage.getItem('crux_dev_gemini_key');
+      if (devKey) {
+        try {
+          const prompt = `Act as a neutral Socratic debate referee. Analyze this statement on "${topic}": "${text}". Return strict JSON with keys: claimType ("Normative / Value" or "Empirical / Factual"), scope ("Universal Claim" or "Conditional / Bounded Claim"), highlightPhrase (exact short substring from text), assumption (1 concise sentence), biasNote (1 concise sentence), socraticQuestion (1 boundary-testing question), steelman (1 charitable summary sentence), suggestedPrecision (optional refined version with boundary conditions, or empty string).`;
+          const gRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(devKey)}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: prompt }] }],
+              generationConfig: { responseMimeType: "application/json" }
+            })
+          });
+          if (gRes.ok) {
+            const gData = await gRes.json();
+            const raw = gData.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (raw) return JSON.parse(raw);
+          }
+        } catch (e) {}
+      }
+
+      // 3. Deterministic Socratic Heuristic Engine
+      const lower = text.toLowerCase();
+      const isAbsolute = /\b(always|never|completely|all|every|wrong|inherently|kills)\b/.test(lower);
+      const isEmpirical = /\b(\d+%|study|data|evidence|statistics|research|rates|markets)\b/.test(lower);
+
+      let highlightPhrase = "";
+      const candidates = [
+        "unless and until there are no alternatives",
+        "scrapped completely",
+        "just for taste",
+        "inherently wrong",
+        "kills merit",
+        "bypasses qualified applicants",
+        "markets naturally punish",
+        "always",
+        "never",
+        "completely"
+      ];
+      for (const c of candidates) {
+        if (lower.includes(c)) {
+          highlightPhrase = text.substr(lower.indexOf(c), c.length);
+          break;
+        }
+      }
+      if (!highlightPhrase) {
+        highlightPhrase = text.split(' ').slice(0, Math.min(4, text.split(' ').length)).join(' ');
+      }
+
+      let assumption = "Implicitly prioritizes a primary ethical or causal standard without yet specifying edge-case exceptions.";
+      let socraticQuestion = "Under what specific boundary condition or exception would you revise this claim?";
+      let suggestedPrecision = "";
+
+      if (lower.includes("reservation") || lower.includes("merit")) {
+        assumption = auditCycleCounter % 2 === 0
+          ? "Assumes standardized selection metrics measure individual merit independently of historical baseline access."
+          : "Assumes institutional efficiency and corrective representation cannot be balanced via periodic review.";
+        socraticQuestion = "Do you mean unchecked reservation without periodic review is flawed, or that any targeted uplift mechanism is wrong at all levels?";
+        suggestedPrecision = "Unchecked reservation without periodic review and creamy-layer audits can distort incentives, whereas time-bound structural support should target foundational access.";
+      } else if (lower.includes("nepotism") || lower.includes("heir")) {
+        assumption = auditCycleCounter % 2 === 0
+          ? "Assumes familial succession operates identically across public institutions and private family enterprises."
+          : "Assumes market competition penalizes nepotistic appointments rapidly without network lock-in.";
+        socraticQuestion = "What exact standard defines 'wrong' here—violation of public fiduciary meritocracy, or familial mentorship in private craft?";
+        suggestedPrecision = "Nepotism is wrong in public and merit-evaluated institutions where opaque familial privilege displaces qualified candidates.";
+      } else if (lower.includes("animal") || lower.includes("taste") || lower.includes("kill")) {
+        assumption = auditCycleCounter % 2 === 0
+          ? "Assumes sentient animals hold moral status that outweighs non-essential human sensory preferences."
+          : "Assumes culinary enjoyment and cultural continuity justify avoidable harm to sentient beings.";
+        socraticQuestion = "Does sensory pleasure justify harm in general, or only when confined to traditional dietary practices?";
+        suggestedPrecision = "Killing sentient animals for food is morally unjustified whenever accessible, nutritionally complete alternatives exist outside survival or medical necessity.";
+      }
+
+      return {
+        claimType: isEmpirical ? "Empirical / Factual" : "Normative / Value",
+        scope: isAbsolute ? "Universal Claim" : "Conditional / Bounded Claim",
+        highlightPhrase,
+        assumption,
+        biasNote: isAbsolute
+          ? "Universal Generalization: Broad absolute phrasing invites counter-examples at the margins."
+          : "Bounded framing detected; verify whether the exception criteria are empirically measurable.",
+        socraticQuestion,
+        steelman: text.length > 115 ? text.slice(0, 112) + "..." : text,
+        suggestedPrecision
+      };
+    }
+
+    function extractCorePremise(text) {
+      if (!text) return "Awaiting stance input.";
+      return "Core premise: " + (text.length > 95 ? text.slice(0, 92) + "..." : text);
+    }
+
+    function synthesizeCentralConflict(topic, sA, sB) {
+      return `Core divergence on "${topic}": Proposition A grounds its standard in conditional harm-minimization and structural fairness, whereas Counter-Position B prioritizes individual liberty, utility, or procedural neutrality.`;
+    }
+
+    // =========================================================================
+    // 9. STANCE REFINEMENT & WORD-LEVEL DIFF ENGINE
+    // =========================================================================
+    function openRefineStanceModal(side) {
+      const room = getCurrentRoom();
+      appState.refiningSide = side;
+      const current = side === 'A' ? room.stanceA.text : room.stanceB.text;
+      document.getElementById('refine-stance-textarea').value = current;
+      document.getElementById('refine-modal').classList.remove('hidden');
+      document.getElementById('refine-modal').classList.add('flex');
+    }
+
+    function closeRefineModal() {
+      document.getElementById('refine-modal').classList.add('hidden');
+      document.getElementById('refine-modal').classList.remove('flex');
+    }
+
+    function submitStanceRefinement() {
+      const newText = document.getElementById('refine-stance-textarea').value.trim();
+      if (!newText) return;
+
+      const room = getCurrentRoom();
+      const side = appState.refiningSide;
+      const target = side === 'A' ? room.stanceA : room.stanceB;
+      const oldText = target.text;
+      const oldVer = target.version;
+      const parts = oldVer.split('.');
+      const newVer = `${parts[0]}.${parseInt(parts[1] || '0', 10) + 1}`;
+
+      const diffHtml = computeWordDiff(oldText, newText);
+      room.stanceHistory.unshift({
+        side,
+        fromVer: oldVer,
+        toVer: newVer,
+        diffHtml
+      });
+
+      target.text = newText;
+      target.version = newVer;
+      target.premise = extractCorePremise(newText);
+
+      addKarma(20);
+      if (document.getElementById('refine-award-delta').checked) {
+        appState.deltas += 1;
+        addKarma(25);
+      }
+
+      closeRefineModal();
+      broadcastCurrentRoom();
+      renderArena();
+      document.getElementById('stance-diff-history').classList.remove('hidden');
+      showToast(`Updated Side ${side} thesis to v${newVer} (+20 Karma)`);
+    }
+
+    function computeWordDiff(oldStr, newStr) {
+      const oldWords = oldStr.split(/\s+/);
+      const newWords = newStr.split(/\s+/);
+      const oldSet = new Set(oldWords);
+      const newSet = new Set(newWords);
+
+      const removed = oldWords.filter(w => !newSet.has(w)).map(w => `<del class="bg-red-50 text-red-700 px-1 rounded">${escapeHtml(w)}</del>`);
+      const added = newWords.map(w => oldSet.has(w)
+        ? escapeHtml(w)
+        : `<ins class="no-underline bg-emerald-50 text-emerald-800 font-medium px-1 rounded">${escapeHtml(w)}</ins>`
+      ).join(' ');
+
+      return `${added}${removed.length ? ' <span class="text-stone-400 ml-1">(Removed: ' + removed.join(' ') + ')</span>' : ''}`;
+    }
+
+    function toggleVersionHistory() {
+      document.getElementById('stance-diff-history').classList.toggle('hidden');
+    }
+
+    function renderStanceHistory() {
+      const room = getCurrentRoom();
+      const list = document.getElementById('stance-diff-list');
+      if (!room.stanceHistory.length) {
+        list.innerHTML = `<div class="text-stone-500 italic">No stance revisions logged in #${room.roomCode} yet. Click "Refine Stance" on either thesis to record a version diff.</div>`;
+        return;
+      }
+      list.innerHTML = room.stanceHistory.map(h => `
+        <div class="p-2.5 rounded-lg bg-paper border border-borderwarm">
+          <div class="font-mono text-[11px] text-accent mb-1">Side ${h.side}: v${h.fromVer} &rarr; v${h.toVer}</div>
+          <div class="leading-relaxed">${h.diffHtml}</div>
+        </div>
+      `).join('');
+    }
+
+    // =========================================================================
+    // 10. SHAREABLE EPISTEMIC ARTIFACT EXPORT (PNG, SVG, MARKDOWN)
+    // =========================================================================
+    function generateArtifactSVGString() {
+      const room = getCurrentRoom();
+      const topic = escapeXml(room.topic.slice(0, 74));
+      const sA = escapeXml(room.stanceA.text.slice(0, 125));
+      const sB = escapeXml(room.stanceB.text.slice(0, 125));
+      const crux = escapeXml((room.cruxes.values[0] || room.centralDistillation).slice(0, 110));
+      const shared = escapeXml((room.cruxes.shared[0] || "Both parties engaged under Rapoport's Rules.").slice(0, 110));
+
+      return `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="440" viewBox="0 0 800 440">
+        <rect width="800" height="440" fill="#FAF9F6" rx="16"/>
+        <rect x="24" y="24" width="752" height="392" fill="#FFFFFF" stroke="#E4E0D8" stroke-width="1.5" rx="12"/>
+        <text x="48" y="62" font-family="Georgia, serif" font-size="13" fill="#2B5B4E" font-weight="bold">CRUX • EPISTEMIC DEBATE ARTIFACT</text>
+        <text x="752" y="62" text-anchor="end" font-family="monospace" font-size="12" fill="#78716C">ROOM #${escapeXml(room.roomCode)} • Δ PINS: ${appState.deltas}</text>
+        <text x="48" y="96" font-family="Georgia, serif" font-size="20" fill="#18181B" font-weight="bold">${topic}</text>
+        <line x1="48" y1="116" x2="752" y2="116" stroke="#E4E0D8" stroke-width="1"/>
+        <rect x="48" y="134" width="340" height="110" fill="#FAF9F6" stroke="#E4E0D8" rx="8"/>
+        <text x="64" y="158" font-family="sans-serif" font-size="11" fill="#2B5B4E" font-weight="bold">PROPOSITION A (v${escapeXml(room.stanceA.version)})</text>
+        <foreignObject x="64" y="166" width="308" height="70">
+          <div xmlns="http://www.w3.org/1999/xhtml" style="font-family:sans-serif;font-size:12px;color:#292524;line-height:1.4;">${sA}</div>
+        </foreignObject>
+        <rect x="412" y="134" width="340" height="110" fill="#FAF9F6" stroke="#E4E0D8" rx="8"/>
+        <text x="428" y="158" font-family="sans-serif" font-size="11" fill="#9A5B13" font-weight="bold">COUNTER-POSITION B (v${escapeXml(room.stanceB.version)})</text>
+        <foreignObject x="428" y="166" width="308" height="70">
+          <div xmlns="http://www.w3.org/1999/xhtml" style="font-family:sans-serif;font-size:12px;color:#292524;line-height:1.4;">${sB}</div>
+        </foreignObject>
+        <rect x="48" y="262" width="704" height="52" fill="#EBF3F0" rx="8"/>
+        <text x="64" y="283" font-family="sans-serif" font-size="10" fill="#2B5B4E" font-weight="bold">IRREDUCIBLE VALUE CRUX</text>
+        <text x="64" y="302" font-family="sans-serif" font-size="12" fill="#18181B">${crux}</text>
+        <rect x="48" y="324" width="704" height="48" fill="#FAF9F6" stroke="#E4E0D8" rx="8"/>
+        <text x="64" y="344" font-family="sans-serif" font-size="10" fill="#57534E" font-weight="bold">ESTABLISHED SHARED GROUND</text>
+        <text x="64" y="361" font-family="sans-serif" font-size="12" fill="#44403C">${shared}</text>
+        <text x="48" y="398" font-family="sans-serif" font-size="11" fill="#78716C">Mediated on Crux • Steel-Manned &amp; Assumption-Audited</text>
+      </svg>`;
+    }
+
+    function openExportModal() {
+      document.getElementById('artifact-svg-preview').innerHTML = generateArtifactSVGString();
+      document.getElementById('export-modal').classList.remove('hidden');
+      document.getElementById('export-modal').classList.add('flex');
+    }
+
+    function closeExportModal() {
+      document.getElementById('export-modal').classList.add('hidden');
+      document.getElementById('export-modal').classList.remove('flex');
+    }
+
+    function downloadArtifactSVG() {
+      const room = getCurrentRoom();
+      const svgStr = generateArtifactSVGString();
+      const blob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      triggerDownload(url, `crux-artifact-${room.roomCode}.svg`);
+    }
+
+    function downloadArtifactPNG() {
+      const room = getCurrentRoom();
+      const svgStr = generateArtifactSVGString();
+      const img = new Image();
+      const svgBlob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(svgBlob);
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = 1600;
+        canvas.height = 880;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, 1600, 880);
+        URL.revokeObjectURL(url);
+        triggerDownload(canvas.toDataURL('image/png'), `crux-artifact-${room.roomCode}.png`);
+      };
+      img.src = url;
+    }
+
+    function copyArtifactMarkdown() {
+      const room = getCurrentRoom();
+      const md = [
+        `# Crux Epistemic Debate Record (${room.roomCode})`,
+        `**Topic:** ${room.topic}`,
+        ``,
+        `## Evolved Stances`,
+        `- **Proposition A (v${room.stanceA.version}):** ${room.stanceA.text}`,
+        `- **Counter-Position B (v${room.stanceB.version}):** ${room.stanceB.text}`,
+        ``,
+        `## Central Disagreement & Shared Ground`,
+        `- **Central Crux:** ${room.centralDistillation}`,
+        `- **Shared Ground:** ${room.cruxes.shared.join(' | ')}`,
+        ``,
+        `## Dialogue Turns`,
+        ...room.turns.map(t => `- **[Side ${t.side} • ${t.author} ${t.roleTag}]:** ${t.text}\n  - *AI Assumption Flag:* ${t.assumption}`)
+      ].join('\n');
+
+      navigator.clipboard?.writeText(md);
+      const btn = document.getElementById('btn-copy-md');
+      btn.textContent = 'Copied Markdown!';
+      showToast("Copied Markdown debate record");
+      setTimeout(() => { btn.textContent = 'Copy Markdown'; }, 2000);
+    }
+
+    function triggerDownload(href, filename) {
+      const a = document.createElement('a');
+      a.href = href;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    // =========================================================================
+    // 11. IN-APP FACT & EMPIRICAL DATA LOOKUP ENGINE
+    // =========================================================================
+    let lastFactResult = null;
+
+    function openFactModal(prefillQuery) {
+      document.getElementById('fact-modal').classList.remove('hidden');
+      document.getElementById('fact-modal').classList.add('flex');
+      if (prefillQuery) {
+        document.getElementById('fact-query-input').value = prefillQuery;
+        runFactQuery(prefillQuery);
+      } else {
+        document.getElementById('fact-query-input').focus();
+      }
+    }
+
+    function closeFactModal() {
+      document.getElementById('fact-modal').classList.add('hidden');
+      document.getElementById('fact-modal').classList.remove('flex');
+    }
+
+    async function runFactQuery(overrideQuery) {
+      const input = document.getElementById('fact-query-input');
+      const query = (overrideQuery || input.value).trim();
+      if (!query) {
+        input.focus();
+        return;
+      }
+      if (overrideQuery) input.value = overrideQuery;
+
+      const container = document.getElementById('fact-result-container');
+      container.classList.remove('hidden');
+      document.getElementById('fact-summary-text').textContent = "Querying empirical consensus and separating normative claims...";
+      document.getElementById('fact-bullets-list').innerHTML = "";
+
+      const result = await fetchEmpiricalData(query);
+      lastFactResult = result;
+
+      document.getElementById('fact-claim-type-badge').textContent = result.claimClassification;
+      document.getElementById('fact-consensus-badge').textContent = result.consensusLevel;
+      document.getElementById('fact-summary-text').textContent = result.summary;
+      document.getElementById('fact-bullets-list').innerHTML = result.findings
+        .map(f => `<li>${escapeHtml(f)}</li>`).join('');
+      document.getElementById('fact-normative-note').textContent = result.normativeBoundary;
+    }
+
+    async function fetchEmpiricalData(query) {
+      try {
+        const res = await fetch('/api/referee', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mode: 'fact_lookup', query })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.summary) return data;
+        }
+      } catch (e) {}
+
+      const devKey = localStorage.getItem('crux_dev_gemini_key');
+      if (devKey) {
+        try {
+          const prompt = `Act as a neutral empirical fact-checker for a structured debate. Analyze this query: "${query}". Return strict JSON with keys: claimClassification ("Empirical / Testable" or "Normative / Value Judgment" or "Mixed Empirical & Normative"), consensusLevel ("High Consensus", "Contested / Mixed Evidence", or "Context-Dependent"), summary (2 neutral sentences summarizing established data), findings (array of 3 concise bullet strings with named studies/institutions), normativeBoundary (1 sentence explaining what data cannot decide).`;
+          const gRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(devKey)}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: prompt }] }],
+              generationConfig: { responseMimeType: "application/json" }
+            })
+          });
+          if (gRes.ok) {
+            const gData = await gRes.json();
+            const raw = gData.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (raw) return JSON.parse(raw);
+          }
+        } catch (e) {}
+      }
+
+      const q = query.toLowerCase();
+      if (q.includes('animal') || q.includes('livestock') || q.includes('meat') || q.includes('emission') || q.includes('taste')) {
+        return {
+          claimClassification: "Mixed Empirical & Normative",
+          consensusLevel: "High Consensus (Environmental & Nutritional)",
+          summary: "Global food-system analyses show animal agriculture accounts for ~14.5%–19% of anthropogenic greenhouse gas emissions and uses ~77% of agricultural land while supplying ~18% of global calories (FAO; Poore & Nemecek, Science 2018).",
+          findings: [
+            "Poore & Nemecek (Science, 2018): Shifting from high-impact livestock to plant-based proteins reduces agricultural land use by up to 76% and food-related emissions by ~49%.",
+            "Academy of Nutrition and Dietetics: Appropriately planned vegetarian and vegan diets are nutritionally adequate across life stages, requiring reliable Vitamin B12 fortification or supplementation.",
+            "Agro-ecological boundary: Pastoral grazing remains a primary caloric source in arid/alpine terrains unsuitable for arable crop cultivation."
+          ],
+          normativeBoundary: "Empirical data quantifies ecological footprint and nutritional adequacy, but cannot decide the moral weight of animal sentience versus human culinary pleasure."
+        };
+      }
+      if (q.includes('reservation') || q.includes('affirmative') || q.includes('merit') || q.includes('mobility')) {
+        return {
+          claimClassification: "Mixed Empirical & Normative",
+          consensusLevel: "Context-Dependent (Policy Economics)",
+          summary: "Econometric studies on affirmative reservation show measurable gains in higher-education access and intergenerational mobility for marginalized cohorts, paired with policy debate around periodic creamy-layer audits.",
+          findings: [
+            "Bertrand, Hanna & Mullainathan (J. Public Economics, 2010): Engineering college reservations in India generated substantial positive household income gains for lower-caste entrants.",
+            "Deshpande & Weisskopf (2014): Empirical analysis of Indian Railways found no statistically significant productivity decline associated with affirmative hiring quotas.",
+            "Governance audits indicate that pairing reservation with periodic socio-economic review and K-12 pipeline investment broadens intra-group distribution."
+          ],
+          normativeBoundary: "Data measures graduation rates, earnings, and output, whereas weighing historical corrective justice against strict score-based selection remains a normative choice."
+        };
+      }
+      if (q.includes('nepotism') || q.includes('family') || q.includes('firm') || q.includes('governance') || q.includes('heir')) {
+        return {
+          claimClassification: "Empirical / Testable (Governance)",
+          consensusLevel: "High Consensus (Corporate & Public Sector)",
+          summary: "Corporate governance literature consistently finds that inherited CEO succession in publicly traded firms correlates with lower operating profitability compared to external appointments, while small craft enterprises vary.",
+          findings: [
+            "Pérez-González (American Economic Review, 2006): Firms promoting family heirs to CEO underperform matched peers featuring unrelated promotions by ~14% in return on assets.",
+            "Bloom & Van Reenen (World Management Survey): Family-primogeniture ownership structures correlate with lower standardized management quality scores across manufacturing cohorts.",
+            "Public administration benchmarks link familial patronage in civil service to eroded institutional trust and lower meritocratic retention."
+          ],
+          normativeBoundary: "Empirical studies measure firm profitability and public trust, while the scope of private family inheritance rights remains a philosophical question."
+        };
+      }
+
+      return {
+        claimClassification: "Mixed Empirical & Normative",
+        consensusLevel: "Context-Dependent",
+        summary: `Empirical verification for "${query}": Testable sub-claims (rates, longitudinal cohort outcomes, economic impacts) must be separated from underlying ethical value priorities.`,
+        findings: [
+          "Operationalization Check: Define concrete metrics (percentage change, longitudinal cohort studies) before drawing causal conclusions.",
+          "Base-Rate Comparison: Compare intervention outcomes against matched control baselines to prevent survivorship bias.",
+          "Source Hierarchy: Weight systematic meta-analyses and institutional datasets above isolated anecdotes."
+        ],
+        normativeBoundary: "Empirical evidence clarifies what happens in practice, not which moral value ought to take precedence."
+      };
+    }
+
+    function citeFactToCruxMap() {
+      if (!lastFactResult) return;
+      const room = getCurrentRoom();
+      const entry = `[Empirical Reference • ${lastFactResult.consensusLevel}]: ${lastFactResult.summary}`;
+      if (!room.cruxes.shared.includes(entry)) {
+        room.cruxes.shared.unshift(entry);
+        broadcastCurrentRoom();
+        renderCruxInspector();
+      }
+      const btn = document.getElementById('btn-cite-crux');
+      btn.textContent = 'Pinned to Shared Ground!';
+      showToast("Pinned empirical finding to Shared Ground");
+      setTimeout(() => { btn.textContent = '+ Pin to Shared Ground (Crux Map)'; }, 2000);
+    }
+
+    function insertFactIntoComposer() {
+      if (!lastFactResult) return;
+      if (appState.currentView !== 'arena') navigate('arena');
+      const box = document.getElementById('composer-draft-input');
+      const citation = ` [Empirical context (${lastFactResult.consensusLevel}): ${lastFactResult.summary}]`;
+      box.value = (box.value + citation).trim();
+      closeFactModal();
+      if (!appState.gateVerified) {
+        showToast("Citation added to draft — verify Step 1 Steel-Man Gate to edit & publish");
+      } else {
+        box.focus();
+        showToast("Inserted empirical citation into draft");
+      }
+    }
+
+    // =========================================================================
+    // 12. CORNER CONTROL HUB DRAWER, KARMA & KNOWLEDGE BASE
+    // =========================================================================
+    function openDrawer(tab) {
+      document.getElementById('control-drawer-backdrop').classList.remove('hidden');
+      document.getElementById('control-drawer').classList.remove('hidden');
+      document.getElementById('control-drawer').classList.add('flex');
+      switchDrawerTab(tab || 'profile');
+    }
+
+    function closeDrawer() {
+      document.getElementById('control-drawer-backdrop').classList.add('hidden');
+      document.getElementById('control-drawer').classList.add('hidden');
+      document.getElementById('control-drawer').classList.remove('flex');
+    }
+
+    function switchDrawerTab(tab) {
+      ['profile', 'knowledge', 'how', 'about'].forEach(t => {
+        document.getElementById('dpanel-' + t).classList.toggle('hidden', t !== tab);
+        const btn = document.getElementById('dtab-' + t);
+        btn.className = t === tab
+          ? 'pb-2.5 border-b-2 border-ink text-ink whitespace-nowrap'
+          : 'pb-2.5 border-b-2 border-transparent text-stone-500 hover:text-ink whitespace-nowrap';
+      });
+    }
+
+    function addKarma(pts) {
+      appState.karma += pts;
+      updateKarmaUI();
+    }
+
+    function updateKarmaUI() {
+      document.getElementById('profile-karma-total').textContent = appState.karma;
+      document.getElementById('profile-deltas-total').textContent = appState.deltas;
+      document.getElementById('profile-credits-total').textContent = appState.credits;
+    }
+
+    function toggleSignInState() {
+      appState.signedIn = !appState.signedIn;
+      document.getElementById('profile-display-name').textContent = appState.signedIn
+        ? 'Dr. Varun Agarwal (Verified Account)'
+        : 'Dr. Varun Agarwal (Guest Session)';
+      document.getElementById('btn-auth-toggle').textContent = appState.signedIn ? 'Sign Out' : 'Sign In';
+      showToast(appState.signedIn ? "Signed in as Dr. Varun Agarwal" : "Switched to Guest Session");
+    }
+
+    function saveBackendConfig() {
+      const gKey = document.getElementById('cfg-gemini-key').value.trim();
+      const sUrl = document.getElementById('cfg-supabase-url').value.trim();
+      const sKey = document.getElementById('cfg-supabase-key').value.trim();
+      if (gKey) localStorage.setItem('crux_dev_gemini_key', gKey);
+      else localStorage.removeItem('crux_dev_gemini_key');
+      if (sUrl) localStorage.setItem('crux_supabase_url', sUrl);
+      if (sKey) localStorage.setItem('crux_supabase_key', sKey);
+      showToast("Saved local backend & AI Referee configuration");
+    }
+
+    function loadSavedConfig() {
+      const gKey = localStorage.getItem('crux_dev_gemini_key') || '';
+      const sUrl = localStorage.getItem('crux_supabase_url') || '';
+      const sKey = localStorage.getItem('crux_supabase_key') || '';
+      document.getElementById('cfg-gemini-key').value = gKey;
+      document.getElementById('cfg-supabase-url').value = sUrl;
+      document.getElementById('cfg-supabase-key').value = sKey;
+    }
+
+    function renderKnowledgeBase() {
+      document.getElementById('knowledge-base-cards').innerHTML = KNOWLEDGE_ITEMS.map(item => `
+        <div class="p-4 rounded-2xl bg-white border border-borderwarm space-y-2">
+          <div class="flex items-center justify-between">
+            <h4 class="font-editorial text-lg font-medium text-ink">${item.title}</h4>
+            <span class="px-2 py-0.5 rounded bg-subtle border border-borderwarm text-[10px] font-mono text-stone-600">${item.tag}</span>
+          </div>
+          <p class="text-xs text-stone-700 leading-relaxed">${item.summary}</p>
+          <p class="text-xs text-accent bg-accentlight/50 p-2.5 rounded-lg border border-accent/15">${item.distinction}</p>
+          <div class="pt-1">
+            <a href="${item.link}" target="_blank" rel="noopener noreferrer" class="text-xs font-medium text-ink hover:text-accent underline">
+              Read Reference: ${item.linkLabel} &nearr;
+            </a>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function escapeXml(str) {
+      return escapeHtml(str).replace(/'/g, '&apos;');
+    }
+
+    init();
+  </script>
+  </div>
+</body>
+</html>
